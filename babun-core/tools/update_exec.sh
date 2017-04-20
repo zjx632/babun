@@ -9,7 +9,7 @@ check_file_permissions_on_update
 
 # install/update plugins
 "$babun"/source/babun-core/plugins/install.sh || { echo "ERROR: Could not update babun!"; exit -2; }
- 
+
 # install/update home folder
 "$babun"/source/babun-core/plugins/install_home.sh || { echo "ERROR: Could not update home folder! Try executing 'babun install' manually!"; exit -3; }
 

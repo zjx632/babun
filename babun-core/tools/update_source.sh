@@ -15,10 +15,10 @@ echo "  upstream  [$BABUN_BRANCH]"
 
 
 installed_version_string=$( get_current_version )
-if [[ "$option" != "--force" ]]; then	
+if [[ "$option" != "--force" ]]; then
 	newest_version_string=$( get_newest_version )
 
-	if [[ -z "$newest_version_string" ]]; then 
+	if [[ -z "$newest_version_string" ]]; then
 		echo "ERROR: Cannot fetch the newest version from github. Are you behind a proxy? Execute 'babun check' to find out."
 		exit -1
 	fi
@@ -34,7 +34,7 @@ if [[ "$option" != "--force" ]]; then
 		update_cygwin_instance
 		exit 0
 	fi
-else 
+else
 	echo "  installed [$installed_version_string]"
 	echo "  newest    [FORCE]"
 fi

@@ -16,7 +16,7 @@ if %1.==. (
 	set BABUN_HOME=%USERPROFILE%\.babun
 	set TARGET=%USERPROFILE%
 	GOTO CHECKTARGET
-)	
+)
 if "%1"=="/t" GOTO TARGET
 if "%1"=="/target" (GOTO TARGET || GOTO UNKNOWNFLAG)
 
@@ -43,7 +43,7 @@ EXIT /b 255
 :CHECKTARGET
 rem NOTHING FOR NOW
 
-:CHECKFREESPACE	
+:CHECKFREESPACE
 set DRIVE_LETTER=%BABUN_HOME:~0,2%
 FOR /F "usebackq tokens=*" %%r in (`cscript //Nologo "%FREESPACE_SCRIPT%" "%DRIVE_LETTER%"`) DO SET FREE_SPACE=%%r
 
@@ -77,35 +77,35 @@ IF "%HOME%"=="" (
 
 :SKIPHOMESET
 IF "%NOCHECK%"=="true" (
-	ECHO [babun] WARN: NOCHECK set to true	
+	ECHO [babun] WARN: NOCHECK set to true
 	GOTO UNZIP
 )
 
-:HOMESET	
+:HOMESET
 ECHO [babun] WARN: Windows HOME environment variable is set to: %HOME%
 ECHO [babun] WARN: ---------------------------------------------------------------
 ECHO [babun] WARN: FULL COMPATIBILITY CANNOT BE GUARANTEED WHEN 'HOME' IS SET
-ECHO [babun] WARN: YOU MAY RUN INTO MANY ISSUES THAT CANNOT BE FORESEEN... 
+ECHO [babun] WARN: YOU MAY RUN INTO MANY ISSUES THAT CANNOT BE FORESEEN...
 ECHO [babun] WARN: ---------------------------------------------------------------
 ECHO [babun] WARN: It's recommended to remove the HOME variable and try again.
 ECHO [babun] WARN: If you are running the installer from a cmd.exe - restart it.
 ECHO [babun] WARN: Otherwise the ENV variables will not be propagated to cmd.exe
-SET /p answer="Do you really wish to proceed (Y / N)?" 
+SET /p answer="Do you really wish to proceed (Y / N)?
 IF "%answer:~0,1%"=="Y" GOTO UNZIP
 IF "%answer:~0,1%"=="y" GOTO UNZIP
-EXIT /b 255	 
+EXIT /b 255
 
 :UNZIP
 set CYGWIN_HOME=%BABUN_HOME%\cygwin
 
 if exist "%BABUN_HOME%/*.*" (
- 	ECHO [babun] Babun home already exists: "%BABUN_HOME%"
-	ECHO [babun] Delete the old folder in order to proceed. Terminating!
-	pause
- 	EXIT /b 255
+    ECHO [babun] Babun home already exists: "%BABUN_HOME%"
+    ECHO [babun] Delete the old folder in order to proceed. Terminating!
+    pause
+    EXIT /b 255
 )
 if not exist "%BABUN_HOME%" (mkdir "%BABUN_HOME%" || goto :ERROR)
-ECHO [babun] Unzipping 
+ECHO [babun] Unzipping
 
 "%UNZIPPER%" "%BABUN_ZIP%" -d "%TARGET%"
 if not exist "%BABUN_HOME%/*.*" (GOTO ERROR)
@@ -153,5 +153,5 @@ GOTO END
 ECHO [babun] Terminating due to internal error #%errorlevel%
 EXIT /b %errorlevel%
 
-:END 
+:END
 pause
