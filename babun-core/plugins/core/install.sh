@@ -1,12 +1,12 @@
 #!/bin/bash
 set -e -f -o pipefail
 source "/usr/local/etc/babun.instance"
- 
+
 source "$babun_tools/script.sh"
 src="$babun_source/babun-core/plugins/core/src"
 
 typeset -i installed_version
-installed_version=$(echo "$1" || echo "0") 
+installed_version=$(echo "$1" || echo "0")
 
 /bin/cp -rf $src/babun /usr/local/bin
 chmod 755 /usr/local/bin/babun
@@ -25,7 +25,7 @@ mkdir -p "$babun/home/core"
 
 
 profiles=("/etc/bash.bashrc")
-for profile in "${profiles[@]}"; do	
+for profile in "${profiles[@]}"; do
 	if ! grep -Fxq "source /usr/local/etc/babun.rc" "$profile" ;then
 		echo "Supplementing shell with babun.rc -> $profile"
 		echo "source /usr/local/etc/babun.rc" >> "$profile"
@@ -48,7 +48,7 @@ if ! [ -f /etc/zshrc ]; then
 fi
 
 profiles=("/etc/zshrc")
-for profile in "${profiles[@]}"; do	
+for profile in "${profiles[@]}"; do
 	if ! grep -Fxq "source /usr/local/etc/babun.rc" "$profile" ;then
 		echo "Supplementing shell with babun.rc -> $profile"
 		echo "source /usr/local/etc/babun.rc" >> "$profile"
@@ -67,7 +67,7 @@ done
 
 # COMPATIBILITY FIXES
 # INSTALLED_VERSION=1
-if [[ "$installed_version" -le 1 ]]; then	
+if [[ "$installed_version" -le 1 ]]; then
 	echo "Compatibility fixes [core] version=[$installed_version]"
 
 	# fix permissions on cygdrive
@@ -94,11 +94,10 @@ if [[ "$installed_version" -le 1 ]]; then
 		echo "Trying to fix babun.bat launcher"
 		/bin/sed -i "s/--size 100,35 -o Font='Lucida Console'//" "$BABUN_HOME/babun.bat"
 	fi
-	
 
 fi
 
-if [[ "$installed_version" -le 2 ]]; then	
+if [[ "$installed_version" -le 2 ]]; then
 	#remove duplicate lines from /etc/zshrc (consequence of #249)
 	/bin/awk '!a[$0]++' /etc/zshrc > /etc/zshrc.fixed
 	/bin/mv /etc/zshrc.fixed /etc/zshrc
