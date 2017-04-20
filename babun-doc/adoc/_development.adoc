@@ -5,14 +5,14 @@ The project consists of five modules.
 
 === babun-packages
 
-The main goal of the `babun-packages` module is to download the cygwin packages listed in the `conf/cygwin.x86.packages` file.
-The above mentioned packages will be downloaded together with the whole dependency tree. Repositories which the packages are downloaded from are listed in the `conf/cygwin.repositories` file. At the beginning the first repository is taken, if a package is not available in this repo the second repo is used, etc. The process continues until all packages have been downloaded. 
+The main goal of the `babun-packages` module is to download the cygwin packages listed in the `conf/cygwin.x86.packages` or `conf/cygwin.x86_64.packages` file.
+The above mentioned packages will be downloaded together with the whole dependency tree. Repositories which the packages are downloaded from are listed in the `conf/cygwin.repositories` file. At the beginning the first repository is taken, if a package is not available in this repo the second repo is used, etc. The process continues until all packages have been downloaded.
 
 All downloaded packages are stored in the `target/babun-packages` folder.
 
 === babun-cygwin
 
-The main goal of the `babun-cygwin` module is to download and invoke the native cygwin.exe installer. The packages downloaded by the babun-packages module are used as the input - all of them will be installed in the offline cygwin installation. 
+The main goal of the `babun-cygwin` module is to download and invoke the native cygwin.exe installer. The packages downloaded by the babun-packages module are used as the input - all of them will be installed in the offline cygwin installation.
 
 It is not trivial to install and zip a local instance of Cygwin - there are problems with the symlinks as the symlink-file-flags are lost during the compression process. Babun can work it around though. At first, just after the installation, the `symlinks_find.sh` script is invoked in order to store the list of all cygwin's symlinks. This file is delivered as a part of the babun's core. Then, after babun is installed from the zip file on the user's host the `symlinks_repair.sh` script is invoked - it will correct all the broken symlinks listed in the above mentioned file.
 
@@ -37,16 +37,16 @@ This module contains documentation written in ASCIIDOC.
 
 == Building from source
 
-The project is regularly built using Jenkins, on a slave node featuring the Windows Server OS. The Windows OS is required to fully build the distribution package as one of the goals invokes the native `cygwin.exe` installer. The artifacts created by each module are cached/stored in the target folder after a successful build of each step. This mechanism is not intelligent enough to calculate the diffs so if you would like to fully rebuild the whole dist package make sure to invoke the `clean` goal before the `package` goal. For now it's not possible to invoke a build of selective modules only. 
+The project is regularly built using Jenkins, on a slave node featuring the Windows Server OS. The Windows OS is required to fully build the distribution package as one of the goals invokes the native `cygwin.exe` installer. The artifacts created by each module are cached/stored in the target folder after a successful build of each step. This mechanism is not intelligent enough to calculate the diffs so if you would like to fully rebuild the whole dist package make sure to invoke the `clean` goal before the `package` goal. For now it's not possible to invoke a build of selective modules only.
 
 In order to build the dist package invoke:
 ----
-groovy build.groovy package 
+groovy build.groovy package [--64bit]
 ----
 
 In order to clean the project target folder invoke:
 ----
-groovy build.groovy clean 
+groovy build.groovy clean
 ----
 
 In order to publish the release version to bintray invoke:
@@ -60,7 +60,7 @@ The release goal expects the following environment variables: `bintray_user` and
 Every plugin has to consist of three main files:
 
 * install.sh - a file that will be executed during the creation of the babun's distribution
-* install_home.sh - a file that will be executed during the installation of babun to the user's home folder 
+* install_home.sh - a file that will be executed during the installation of babun to the user's home folder
 * plugin.desc - a plugin description that contains the plugin_name and plugin_version variables
 * start.sh (optional) - a file that will be executed on babun startup
 * exec.sh (optional) - a file that allows adding commands to babun script
@@ -115,8 +115,8 @@ The start.sh is an optional script for plugins that require triggering certain a
 
 === exec.sh (optional)
 
-If the plugin folder contains an exec.sh script, 
-whenever `babun <plugin_name> xxx yyy` command is invoked, the execution is passed to `<plugin_name>/exec.sh` script with params `xxx yyy`. 
+If the plugin folder contains an exec.sh script,
+whenever `babun <plugin_name> xxx yyy` command is invoked, the execution is passed to `<plugin_name>/exec.sh` script with params `xxx yyy`.
 In this way a plugin may add some additional shell commands without implementing its own `/usr/local/bin/xxx` script.
 
 == Branches
@@ -189,4 +189,4 @@ The folder contains external resources, like cloned repos of other projects (for
 
 === home
 
-The folder contains folders named like plugins. If a plugin needs to install something to user's folder this content has to be copied to `home/<plugin_name>` folder. It's just a store of the user's home files, so that whenever a new user's account is created babun can install user's home related content to the user's home folder (it's the plugin install_home.sh script's responsibility, however, to copy this content to the actual user's home folder). 
+The folder contains folders named like plugins. If a plugin needs to install something to user's folder this content has to be copied to `home/<plugin_name>` folder. It's just a store of the user's home files, so that whenever a new user's account is created babun can install user's home related content to the user's home folder (it's the plugin install_home.sh script's responsibility, however, to copy this content to the actual user's home folder).

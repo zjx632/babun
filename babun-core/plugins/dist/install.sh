@@ -7,12 +7,7 @@ src="$babun_source/babun-dist"
 babun_root=/cygdrive/$( cygpath -ma "/" | sed "s/://"g )/..
 
 typeset -i installed_version
-installed_version=$(echo "$1" || echo "0") 
-
-# set the cygwin's installed version
-if ! [[ -f "$babun/installed/cygwin" ]]; then
-	echo -e "1.7.29" > "$babun/installed/cygwin"
-fi
+installed_version=$(echo "$1" || echo "0")
 
 # copy dist files to the dist folder
 cp -rf "$src/fonts" "$babun_root"
