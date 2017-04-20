@@ -6,7 +6,7 @@ source "$babun_tools/script.sh"
 src="$babun_source/babun-core/plugins/core/src"
 
 typeset -i installed_version
-installed_version=$(echo "$1" || echo "0")
+installed_version=$(cat "$babun/installed/core" || echo "0")
 
 /bin/cp -rf $src/babun /usr/local/bin
 chmod 755 /usr/local/bin/babun

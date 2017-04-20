@@ -6,9 +6,6 @@ source "$babun_tools/script.sh"
 src="$babun_source/babun-dist"
 babun_root=/cygdrive/$( cygpath -ma "/" | sed "s/://"g )/..
 
-typeset -i installed_version
-installed_version=$(echo "$1" || echo "0")
-
 # copy dist files to the dist folder
 cp -rf "$src/fonts" "$babun_root"
 cp -rf "$src/tools" "$babun_root"
