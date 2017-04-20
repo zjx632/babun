@@ -5,11 +5,11 @@ source "$babun_tools/check.sh"
 function update_cygwin_instance() {
 
 	local newest_cygwin_version=$( get_newest_cygwin_version )
-	if [[ -z "$newest_cygwin_version" ]]; then 
+	if [[ -z "$newest_cygwin_version" ]]; then
 		echo "ERROR: Cannot fetch the newest Cygwin version from github. Are you behind a proxy? Execute 'babun check' to find out."
 		exit -1
 	else
-		
+
 		local newest_cygwin_version_number=$( get_version_as_number $newest_cygwin_version )
 		local current_cygwin_version=$( get_current_cygwin_version )
 		local current_cygwin_version_number=$( get_version_as_number $current_cygwin_version )
@@ -18,7 +18,7 @@ function update_cygwin_instance() {
 		echo "  newest    [$newest_cygwin_version]"
 		if [[ $newest_cygwin_version_number -gt $current_cygwin_version_number ]]; then
 			echo "Cygwin is outdated"
-			local babun_root=$( cygpath -ma "/" | sed "s#/cygwin##g" ) 
+			local babun_root=$( cygpath -ma "/" | sed "s#/cygwin##g" )
 			local running_count=$( ps | grep /usr/bin/mintty | wc -l )
 			if [[ $running_count -gt 1 ]]; then
 				echo -e "------------------------------------------------------------------"
@@ -41,8 +41,8 @@ function update_cygwin_instance() {
 			echo "0"
 			cygstart "$babun_root/update.bat" && pkill 'mintty'
 		else
-			echo "Cygwin is up to date" 
-		fi		
+			echo "Cygwin is up to date"
+		fi
 	fi
 
 }
@@ -55,6 +55,6 @@ function check_file_permissions_on_update() {
 		echo -e "Your babun instance is NOT in a consistent state right now."
 		echo -e "Restart babun as an Admin and rexecute babun update!"
 		echo -e "-----------------------------------------------------------------"
-		exit 1       
-	fi  
+		exit 1
+	fi
 }

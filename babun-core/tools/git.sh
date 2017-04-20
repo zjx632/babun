@@ -6,7 +6,7 @@ if [[ $version == *" 1."* ]]; then
 		echo "WARNING: Git push strategy set to [$push] which is unsupported - changing to 'matching'"
 	    git config --global push.default "matching" || echo "ERROR: Cannot set git push.default to 'matching' - may cause problems..."
 	fi
-else 
+else
 	if [[ "$push" != "nothing" && "$push" != "matching" && "$push" != "simple" && "$push" != "upstream" && "$push" != "current" ]]; then
 		echo "WARNING: Git push strategy set to $push which is unsupported - changing to 'matching'"
 	    git config --global push.default "matching" || echo "ERROR: Cannot set git push.default to 'matching' - may cause problems..."

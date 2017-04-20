@@ -161,7 +161,7 @@ function shell()
         fi
         echo "$currshell"
         echo "$newshell"
-        sed -i "/^$USERNAME/s|/bin/.*sh|$newshell|" "/etc/passwd" || "ERROR: Changing shell to $newshell failed"
+        sed -i "/^$USERNAME/s|$currshell|$newshell|" "/etc/passwd" || "ERROR: Changing shell to $newshell failed"
     fi
 }
 

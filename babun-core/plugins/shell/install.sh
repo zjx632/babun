@@ -16,4 +16,4 @@ dest="$babun/home/shell/"
 /bin/cp -rf $src/vimrc /etc/vimrc
 
 mkdir -p "$dest"
-/bin/cp -rf "$src/.vim" "$dest/.vim" 
+/bin/cp -rf "$src/.vim" "$dest/.vim"

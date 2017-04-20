@@ -15,7 +15,7 @@ function set_reg_keys {
 
 	#install registry keys
 	for key in ${keys[*]}
-	do 
+	do
 		cmd /c "reg" "add" "${key}" "/ve" "/d" "${name}" "/t" "REG_SZ" "/f" || echo "Failed adding ${key}"
 		cmd /c "reg" "add" "${key}\command" "/ve" "/d" "${cmd}" "/t" "REG_EXPAND_SZ" "/f" || echo "Failed adding ${key}"
 	done
@@ -31,7 +31,7 @@ function unset_reg_keys {
 
 	#install registry keys
 	for key in ${keys[*]}
-	do 
+	do
 		cmd /c "reg" "delete" "${key}" "/f" || echo "Failed deleting ${key}"
 	done
 
@@ -44,6 +44,6 @@ elif [ "$1" == "remove" ]; then
 	unset_reg_keys
 elif [ "$1" == "" ]; then
 	echo "Missing argument. Use 'init' or 'remove' option."
-else 
+else
 	echo "Invalid option $1. Valid options are 'init' and 'remove'."
 fi
