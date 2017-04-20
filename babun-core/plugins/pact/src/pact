@@ -1,7 +1,7 @@
 #!/bin/bash
 set -f -o pipefail
 # disabled for now, script is not compatible with this option
-# set -e 
+# set -e
 
 source "/usr/local/etc/babun.instance"
 # source "$babun_tools/script.sh"
@@ -25,7 +25,7 @@ fi
 if [ -z "$USER_AGENT" ]; then
   USER_AGENT="Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)"
 fi
-  
+
 
 function usage()
 {
@@ -61,17 +61,17 @@ function version()
 function findworkspace()
 {
   # default working directory and mirror
-  
+
   mirror=$PACT_REPO
   if [[ -z $mirror ]]; then
   echo "WARNINIG! ~/.pact/pact.repo does not contains \$PACT_REPO mirror address. Using the default one!"
   mirror=http://mirrors.kernel.org/sourceware/cygwin/
   fi
   cache=/setup
-  
+
   # work wherever setup worked last, if possible
   mirrordir="`echo "$mirror" | sed -e "s/:/%3a/g" -e "s:/:%2f:g"`"
-  
+
   echo Working directory is $cache
   echo Mirror is $mirror
   mkdir -p "$cache/$mirrordir"
@@ -79,7 +79,7 @@ function findworkspace()
 }
 
 
-function getsetup() 
+function getsetup()
 {
 #
   currdir="$(pwd)"
@@ -134,7 +134,7 @@ function checkCygwin() {
   then
     # Check if the underlying Cygwin distribution is up to date
     local newest_cygwin_version=$( get_newest_cygwin_version )
-    if [[ -z "$newest_cygwin_version" ]]; then 
+    if [[ -z "$newest_cygwin_version" ]]; then
       echo -e "[WARNING] Could not check the Cygwin distribution version. Installed packages may not work!"
       return
     else
@@ -144,37 +144,18 @@ function checkCygwin() {
       if [[ $newest_cygwin_version_number -gt $current_cygwin_version_number ]]; then
         if [[ force -eq 1 ]]; then
             echo -e "CRITICAL: The underlying Cygwin version is outdated! Force option enabled - continuing!"
-        else 
+        else
             echo -e "-------------------------------------------------------------------------------"
             echo -e "CRITICAL: The underlying Cygwin version is outdated!"
-            echo -e "It's forbidden to install new packages as they may fail to work." 
+            echo -e "It's forbidden to install new packages as they may fail to work."
             echo -e "Execute 'babun update' and follow the instructions to update Cygwin."
             echo -e "If you know what you are doing add '--force' flag to proceed."
             echo -e "-------------------------------------------------------------------------------"
             exit 1
         fi
-      fi    
+      fi
     fi
   fi
-}
-
-function checkPackageCompatibility() {
-  for pkg in $packages
-    do      
-      if [[ $pkg == "git" ]]; then
-          if [[ force -eq 1 ]]; then
-             echo -e "CRITICAL: Installing git in force mode..." 
-           else
-            echo -e "-------------------------------------------------------------------------------"
-            echo -e "CRITICAL: Git cannot be updated in this version!"
-            echo -e "Due to the bug https://github.com/babun/babun/issues/455 it's forbidden to install "
-            echo -e "git as it may not work correctly behind ntlm proxy."             
-            echo -e "If you know what you are doing add '--force' flag to proceed."
-            echo -e "-------------------------------------------------------------------------------"
-            exit 1
-          fi
-      fi
-    done
 }
 
 function installPkg()
@@ -197,8 +178,8 @@ function installPkg()
     mkdir -p "release/$pkg"
     cat setup.ini | awk > "release/$pkg/desc" -v package="$pkg" \
       'BEGIN{RS="\n\n@ "; FS="\n"} {if ($1 == package) {desc = $0; px++}} \
-       END {if (px == 1 && desc != "") print desc; else print "Package not found"}' 
-    
+       END {if (px == 1 && desc != "") print desc; else print "Package not found"}'
+
     desc=`cat "release/$pkg/desc"`
     if test "-$desc-" = "-Package not found-"
     then
@@ -211,7 +192,7 @@ function installPkg()
     # download and unpack the bz2 file
 
     # pick the latest version, which comes first
-    install=`cat "release/$pkg/desc" | awk '/^install: / { print $2; exit }'` 
+    install=`cat "release/$pkg/desc" | awk '/^install: / { print $2; exit }'`
 
     if test "-$install-" = "--"
     then
@@ -222,9 +203,9 @@ function installPkg()
     file=`basename $install`
     cd "release/$pkg"
     wget --user-agent="$USER_AGENT" -nc $mirror/$install
-    
+
     # check the verification hash (md5 or sha512)
-    digest=`cat "desc" | awk '/^install: / { print $4; exit }'` 
+    digest=`cat "desc" | awk '/^install: / { print $4; exit }'`
     md5digactual=`md5sum $file | awk '{print $1}'`
     if ! [[ $digest == $md5digactual ]]
     then
@@ -236,7 +217,7 @@ function installPkg()
         exit 1
       fi
     fi
-    
+
     echo "Unpacking..."
     #determine file type
     if [ "${file##*.}" == "xz" ]; then
@@ -246,22 +227,22 @@ function installPkg()
     fi
     gzip -f "/etc/setup/$pkg.lst"
     cd ../..
-    
-    
+
+
     # update the package database
-    
+
     cat /etc/setup/installed.db | awk > /tmp/awk.$$ -v pkg="$pkg" -v bz=$file \
       '{if (ins != 1 && pkg < $1) {print pkg " " bz " 0"; ins=1}; print $0} \
        END{if (ins != 1) print pkg " " bz " 0"}'
     mv /etc/setup/installed.db /etc/setup/installed.db-save
     mv /tmp/awk.$$ /etc/setup/installed.db
-    
-    
+
+
     # recursively install required packages
-    
+
     echo > /tmp/awk.$$ '/^requires: / {s=gensub("(requires: )?([^ ]+) ?", "\\2 ", "g", $0); print s}'
     requires=`cat "release/$pkg/desc" | awk -f /tmp/awk.$$`
-    
+
     warn=0
     if ! test "-$requires-" = "--"
     then
@@ -283,7 +264,7 @@ function installPkg()
     then
       echo "Warning: some required packages did not install, continuing"
     fi
-    
+
     # run all postinstall scripts
 
     if ! test $noscripts -eq 1
@@ -295,7 +276,7 @@ function installPkg()
         mv $script $script.done
       done
     fi
-    
+
     echo Package $pkg installed
 
     done
@@ -347,7 +328,7 @@ function removePkg()
     mv /tmp/awk.$$ /etc/setup/installed.db
     echo Package $pkg removed
 
-    done  
+    done
 }
 
 while test $# -gt 0
@@ -412,7 +393,7 @@ test $noscripts -eq 0 && check_only_one_running "pact"
 case "$command" in
 
   invalidate)
-  
+
   invalidate=1
     findworkspace
     getsetup
@@ -487,9 +468,8 @@ case "$command" in
 
 
   install)
-    
+
     checkCygwin
-    checkPackageCompatibility
     checkpackages
     findworkspace
     getsetup
@@ -499,9 +479,8 @@ case "$command" in
 
 
   update)
-    
+
     checkCygwin
-    checkPackageCompatibility
     removePkg
     checkpackages
     findworkspace
@@ -511,7 +490,7 @@ case "$command" in
   ;;
 
   remove)
-    
+
     checkpackages
     removePkg
 
@@ -520,8 +499,6 @@ case "$command" in
   *)
 
     usage
-
-
 
   ;;
 
