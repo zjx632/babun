@@ -86,7 +86,11 @@ function getsetup()
     currdir="$(pwd)"
     if test "$noscripts" == "0"
     then
-        if test "$invalidate" == "0" && [ -s "$currdir/setup.ini" ] && [ -s "$currdir/setup.ini-save" ] && [ "$(find "$currdir" -mtime 0 -type f -regex '.*setup.ini-save' 2>/dev/null)" ] && cmp -s "$currdir/setup.ini" "$currdir/setup.ini-save" ; then
+        if test "$invalidate" == "0" &&
+                [ -s "$currdir/setup.ini" ] &&
+                [ -s "$currdir/setup.ini-save" ] &&
+                [ "$(find "$currdir" -mtime 0 -type f -regex '.*setup.ini-save' 2>/dev/null)" ] &&
+                cmp -s "$currdir/setup.ini" "$currdir/setup.ini-save" ; then
             echo "setup.ini taken from the cache"
         else
             touch setup.ini
@@ -165,122 +169,125 @@ function checkCygwin() {
 function installPkg()
 {
 
- for pkg in $packages
+    for pkg in $packages
     do
 
-    already=$(grep -c "^$pkg " /etc/setup/installed.db)
-    if test "$already" -ge 1
-    then
-      echo "Package $pkg is already installed, skipping"
-      continue
-    fi
-    echo ""
-    echo "Installing $pkg"
-
-    # look for package and save desc file
-
-    mkdir -p "release/$pkg"
-    cat setup.ini | awk > "release/$pkg/desc" -v package="$pkg" \
-      'BEGIN{RS="\n\n@ "; FS="\n"} {if ($1 == package) {desc = $0; px++}} END {if (px == 1 && desc != "") print desc; else print "Package not found"}'
-
-    desc=$(cat "release/$pkg/desc")
-    if test "-$desc-" = "-Package not found-"
-    then
-      echo "Package $pkg not found or ambiguous name, exiting"
-      rm -r "release/$pkg"
-      exit 1
-    fi
-    echo Found package "$pkg"
-
-    # download and unpack the bz2 file
-
-    # pick the latest version, which comes first
-    install=$(cat "release/$pkg/desc" | awk '/^install: / { print $2; exit }')
-
-    if test "-$install-" = "--"
-    then
-      echo "Could not find \"install\" in package description: obsolete package?"
-      exit 1
-    fi
-
-    file=$(basename "$install")
-    cd "release/$pkg" || return
-    wget --user-agent="$USER_AGENT" -nc "$mirror/$install"
-
-    # check the verification hash (md5 or sha512)
-    digest=$(cat "desc" | awk '/^install: / { print $4; exit }')
-    md5digactual=$(md5sum "$file" | awk '{print $1}')
-    if ! [[ $digest == "$md5digactual" ]]
-    then
-      shadigactual=$(sha512sum "$file" | awk '{print $1}')
-      if ! [[ $digest == "$shadigactual" ]]
-      then
-        echo "Verification hash did not match, exiting"
-        rm "$file" # Remove the file with bad checksum
-        exit 1
-      fi
-    fi
-
-    echo "Unpacking..."
-    #determine file type
-    if [ "${file##*.}" == "xz" ]; then
-      cat "$file" | tar > "/etc/setup/$pkg.lst" xvJf - -C /
-    else
-      cat "$file" | bunzip2 | tar > "/etc/setup/$pkg.lst" xvf - -C /
-    fi
-    gzip -f "/etc/setup/$pkg.lst"
-    cd ../.. || return
-
-
-    # update the package database
-
-    cat /etc/setup/installed.db | awk > /tmp/awk.$$ -v pkg="$pkg" -v bz="$file" \
-      '{if (ins != 1 && pkg < $1) {print pkg " " bz " 0"; ins=1}; print $0} END{if (ins != 1) print pkg " " bz " 0"}'
-    mv /etc/setup/installed.db /etc/setup/installed.db-save
-    mv /tmp/awk.$$ /etc/setup/installed.db
-
-
-    # recursively install required packages
-
-    echo > /tmp/awk.$$ '/^requires: / {s=gensub("(requires: )?([^ ]+) ?", "\\2 ", "g", $0); print s}'
-    requires=$(cat "release/$pkg/desc" | awk -f /tmp/awk.$$)
-
-    warn=0
-    if ! test "-$requires-" = "--"
-    then
-      echo "Package $pkg requires the following packages, installing:"
-      echo "$requires"
-      for package in $requires
-      do
-        already=$(grep -c "^$package " /etc/setup/installed.db)
+        already=$(grep -c "^$pkg " /etc/setup/installed.db)
         if test "$already" -ge 1
         then
-          echo "Package $package is already installed, skipping"
-          continue
+            echo "Package $pkg is already installed, skipping"
+            continue
         fi
-        pact --noscripts install "$package"
-        if ! test $? = 0 ; then warn=1; fi
-      done
-    fi
-    if ! test $warn = 0
-    then
-      echo "Warning: some required packages did not install, continuing"
-    fi
+        echo ""
+        echo "Installing $pkg"
 
-    # run all postinstall scripts
+        # look for package and save desc file
 
-    if ! test $noscripts -eq 1
-    then
-      mapfile -t pscripts < <(find /etc/postinstall/ -name '*.sh')
-      for script in "${pscripts[@]}"
-      do
-        echo "Running postinstall script: $script"
-        "$script"
-        mv "$script" "$script.done"
-      done
-    fi
+        mkdir -p "release/$pkg"
+        awk -v package="$pkg" \
+          'BEGIN{RS="\n\n@ "; FS="\n"} {if ($1 == package) {desc = $0; px++}} END {if (px == 1 && desc != "") print desc; else print "Package not found"}' \
+          setup.ini > "release/$pkg/desc"
 
-    echo "Package $pkg installed"
+        desc=$(cat "release/$pkg/desc")
+        if test "-$desc-" = "-Package not found-"
+        then
+            echo "Package $pkg not found or ambiguous name, exiting"
+            rm -r "release/$pkg"
+            exit 1
+        fi
+        echo Found package "$pkg"
+
+        # download and unpack the bz2 file
+
+        # pick the latest version, which comes first
+        install=$(awk '/^install: / { print $2; exit }' "release/$pkg/desc")
+
+        if test "-$install-" = "--"
+        then
+            echo "Could not find \"install\" in package description: obsolete package?"
+            exit 1
+        fi
+
+        file=$(basename "$install")
+        cd "release/$pkg" || return
+        wget --user-agent="$USER_AGENT" -nc "$mirror/$install"
+
+        # check the verification hash (md5 or sha512)
+        digest=$(awk '/^install: / { print $4; exit }' "$desc")
+        md5digactual=$(md5sum "$file" | awk '{print $1}')
+        if ! [[ $digest == "$md5digactual" ]]
+        then
+            shadigactual=$(sha512sum "$file" | awk '{print $1}')
+            if ! [[ $digest == "$shadigactual" ]]
+            then
+                echo "Verification hash did not match, exiting"
+                rm "$file" # Remove the file with bad checksum
+                exit 1
+            fi
+        fi
+
+        echo "Unpacking..."
+        # determine file type
+        if [ "${file##*.}" == "xz" ]; then
+            tar xvJf -C / "$file" > "/etc/setup/$pkg.lst"
+        else
+            tar xvjf -C / "$file" > "/etc/setup/$pkg.lst"
+        fi
+        gzip -f "/etc/setup/$pkg.lst"
+        cd ../.. || return
+
+        # update the package database
+
+        awk -v pkg="$pkg" -v bz="$file" \
+          '{if (ins != 1 && pkg < $1) {print pkg " " bz " 0"; ins=1}; print $0} END{if (ins != 1) print pkg " " bz " 0"}' \
+          /etc/setup/installed.db > /tmp/awk.$$
+
+        mv /etc/setup/installed.db /etc/setup/installed.db-save
+        mv /tmp/awk.$$ /etc/setup/installed.db
+
+        # recursively install required packages
+
+        # shellcheck disable=SC2016
+        echo '/^requires: / {s=gensub("(requires: )?([^ ]+) ?", "\\2 ", "g", $0); print s}' > /tmp/awk.$$
+        requires=$(awk -f /tmp/awk.$$ "release/$pkg/desc")
+
+        warn=0
+        if ! test "-$requires-" = "--"
+        then
+            echo "Package $pkg requires the following packages, installing:"
+            echo "$requires"
+            for package in $requires
+            do
+                already=$(grep -c "^$package " /etc/setup/installed.db)
+                if test "$already" -ge 1
+                then
+                    echo "Package $package is already installed, skipping"
+                    continue
+                fi
+                pact --noscripts install "$package"
+                if ! test $? = 0 ; then warn=1; fi
+            done
+        fi
+
+        if ! test $warn = 0
+        then
+            echo "Warning: some required packages did not install, continuing"
+        fi
+
+        # run all postinstall scripts
+
+        if ! test $noscripts -eq 1
+        then
+            mapfile -t pscripts < <(find /etc/postinstall/ -name '*.sh')
+            for script in "${pscripts[@]}"
+            do
+                echo "Running postinstall script: $script"
+                "$script"
+                mv "$script" "$script.done"
+            done
+        fi
+
+        echo "Package $pkg installed"
 
     done
 }
@@ -288,48 +295,48 @@ function installPkg()
 function removePkg()
 {
 
- for pkg in $packages
+    for pkg in $packages
     do
 
-    already=$(grep -c "^$pkg " /etc/setup/installed.db)
-    if test "$already" = 0
-    then
-      echo "Package $pkg is not installed, skipping"
-      continue
-    fi
+        already=$(grep -c "^$pkg " /etc/setup/installed.db)
+        if test "$already" = 0
+        then
+            echo "Package $pkg is not installed, skipping"
+            continue
+        fi
 
-    dontremove="cygwin coreutils gawk bzip2 tar wget bash"
-    for req in $dontremove
-    do
-      if test "-$pkg-" = "-$req-"
-      then
-        echo "pact cannot remove package $pkg, exiting"
-        exit 1
-      fi
-    done
+        dontremove="cygwin coreutils gawk bzip2 tar wget bash"
+        for req in $dontremove
+        do
+            if test "-$pkg-" = "-$req-"
+            then
+                echo "pact cannot remove package $pkg, exiting"
+                exit 1
+            fi
+        done
 
-    if ! test -e "/etc/setup/$pkg.lst.gz"
-    then
-      echo "Package manifest missing, cannot remove $pkg.  Exiting"
-      exit 1
-    fi
-    echo "Removing $pkg"
+        if ! test -e "/etc/setup/$pkg.lst.gz"
+        then
+            echo "Package manifest missing, cannot remove $pkg.  Exiting"
+            exit 1
+        fi
+        echo "Removing $pkg"
 
-    # run preremove scripts
+        # run preremove scripts
 
-    if test -e "/etc/preremove/$pkg.sh"
-    then
-      "/etc/preremove/$pkg.sh"
-      rm "/etc/preremove/$pkg.sh"
-    fi
+        if test -e "/etc/preremove/$pkg.sh"
+        then
+            "/etc/preremove/$pkg.sh"
+            rm "/etc/preremove/$pkg.sh"
+        fi
 
-    cat "/etc/setup/$pkg.lst.gz" | gzip -d | awk '/[^\/]$/ {print "rm -f \"/" $0 "\""}' | sh
-    rm "/etc/setup/$pkg.lst.gz"
-    rm -f /etc/postinstall/$pkg.sh.done
-    cat /etc/setup/installed.db | awk > /tmp/awk.$$ -v pkg="$pkg" '{if (pkg != $1) print $0}'
-    mv /etc/setup/installed.db /etc/setup/installed.db-save
-    mv /tmp/awk.$$ /etc/setup/installed.db
-    echo "Package $pkg removed"
+        gzip -d "/etc/setup/$pkg.lst.gz" | awk '/[^\/]$/ {print "rm -f \"/" $0 "\""}' | sh
+        rm "/etc/setup/$pkg.lst.gz"
+        rm -f /etc/postinstall/$pkg.sh.done
+        awk -v pkg="$pkg" '{if (pkg != $1) print $0}' /etc/setup/installed.db > /tmp/awk.$$
+        mv /etc/setup/installed.db /etc/setup/installed.db-save
+        mv /tmp/awk.$$ /etc/setup/installed.db
+        echo "Package $pkg removed"
 
     done
 }
@@ -405,8 +412,8 @@ case "$command" in
 
   show)
 
-    echo 1>&2 The following packages are installed:
-    cat /etc/setup/installed.db | awk '/[^ ]+ [^ ]+ 0/ {print $1}'
+    echo 1>&2 "The following packages are installed:"
+    awk '/[^ ]+ [^ ]+ 0/ {print $1}' /etc/setup/installed.db
 
   ;;
 
@@ -424,8 +431,8 @@ case "$command" in
       awk '/[^ ]+ [^ ]+ 0/ {if ($1 ~ query) print $1}' query="$pkg" /etc/setup/installed.db
       echo ""
       echo "Searching for installable packages matching $pkg:"
-      cat setup.ini | awk -v query="$pkg" \
-        'BEGIN{RS="\n\n@ "; FS="\n"; ORS="\n"} {if ($1 ~ query) {print $1}}'
+      awk -v query="$pkg" \
+        'BEGIN{RS="\n\n@ "; FS="\n"; ORS="\n"} {if ($1 ~ query) {print $1}}' setup.ini
     done
 
   ;;
@@ -439,8 +446,8 @@ case "$command" in
     for pkg in $packages
     do
       echo ""
-      cat setup.ini | awk -v query="$pkg" \
-        'BEGIN{RS="\n\n@ "; FS="\n"; ORS="\n"} {if ($1 ~ query) {print $0 "\n"}}'
+      awk -v query="$pkg" \
+        'BEGIN{RS="\n\n@ "; FS="\n"; ORS="\n"} {if ($1 ~ query) {print $0 "\n"}}' setup.ini
     done
 
   ;;
@@ -459,7 +466,7 @@ case "$command" in
       mapfile -t manifests < <(find /etc/setup -type f -name '*.lst.gz')
       for manifest in "${manifests[@]}"
       do
-        found=$(cat "$manifest" | gzip -d | grep -o "$key" | wc -l)
+        found=$(gzip -d "$manifest" | grep -o "$key" | wc -l)
         if test "$found" -gt 0
         then
           package=$(echo "$manifest" | sed -e "s:/etc/setup/::" -e "s/.lst.gz//")
@@ -507,6 +514,3 @@ case "$command" in
   ;;
 
 esac
-
-
-
