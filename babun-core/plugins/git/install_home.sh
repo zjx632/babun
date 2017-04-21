@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e -f -o pipefail
 source "/usr/local/etc/babun.instance"
+# shellcheck source=/usr/local/etc/babun/source/babun-core/tools/script.sh
 source "$babun_tools/script.sh"
 
 declare -A gitconfig
@@ -35,17 +36,17 @@ gitmerge['mergetool.keepbackups']='false'
 gitmerge['mergetool.keeptemporaries']='false'
 
 function apply_git_config {
-	eval "declare -A configMap="${1#*=}
-	
-	gitcfg=$(git config --list)
-	
-	for configKey in "${!configMap[@]}"
-	do
-		if [[ $gitcfg != *$configKey* ]]; then
-			configValue="${configMap[$configKey]}"
-			git config --global "$configKey" "$configValue"
-		fi
-	done
+    declare -A configMap="${1#*=}"
+
+    gitcfg=$(git config --list)
+
+    for configKey in "${!configMap[@]}"
+    do
+        if [[ $gitcfg != *$configKey* ]]; then
+            configValue="${configMap[$configKey]}"
+            git config --global "$configKey" "$configValue"
+        fi
+    done
 }
 
 apply_git_config "$(declare -p gitconfig)"
@@ -56,8 +57,8 @@ apply_git_config "$(declare -p gitalias)"
 # BUG FIX -> aliast.last
 gitlast=$(git config --global alias.last || echo "")
 if [[ "$gitlast" == "git log -1 --stat" ]]; then
-	echo "Fixing broken alias.last"
-	git config --global "alias.last" "log -1 --stat"
+    echo "Fixing broken alias.last"
+    git config --global "alias.last" "log -1 --stat"
 fi
 
 

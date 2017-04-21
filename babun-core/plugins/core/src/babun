@@ -1,9 +1,15 @@
 #!/bin/bash
 set -e -f -o pipefail
 source "/usr/local/etc/babun.instance"
+# shellcheck source=/usr/local/etc/babun/source/babun-core/tools/script.sh
 source "$babun_tools/script.sh"
+# shellcheck source=/usr/local/etc/babun/source/babun-core/tools/procps.sh
 source "$babun_tools/procps.sh"
+# shellcheck source=/usr/local/etc/babun/source/babun-core/tools/check.sh
 source "$babun_tools/check.sh"
+
+# babun
+core="$babun_source/babun-core"
 
 check_only_one_running "babun"
 
@@ -56,89 +62,37 @@ function welcome()
   echo -e "This project is created and maintained by Tom Bujok (@tombujok) and Lukasz Pielak (@lukaszpielak)."
 }
 
-#babun
-core="/usr/local/etc/babun/source/babun-core"
-
-# process options
-noscripts=0
-update=0
-file=""
-command=""
-args=""
-
-while test $# -gt 0
-do
-  case "$1" in
-
-    --help)
-      usage
-      exit 0
-    ;;
-
-    --version)
-      version
-      exit 0
-    ;;
-
-    --welcome)
-      welcome
-      exit 0
-    ;;
-
-    --login)
-      login
-      exit 0
-    ;;
-
-    update|check|shell|install|login)
-      if test "-$command-" = "--"
-      then
-        command=$1
-      fi
-      shift
-
-    ;;
-
-    *)
-      if [[ $args == "" ]]; then
-        args="$1";
-      else
-        args="$args $1";
-      fi
-      shift
-    ;;
-
-  esac
-done
-
-
 function update()
 {
-  if [ "$args" != "" ] && [ "$args" != "--force" ]; then echo "ERROR: Wrong argument $args"; exit 1; fi
-  echo "Executing babun update"
+    local args="$1"
 
-  permcheck=$( chmod 777 /usr/local/bin/babun 2> /dev/null || echo "FAILED" )
-  if [[  $permcheck == "FAILED" ]]; then
-    echo -e "ERROR: You don't have write permission to / filesystem. Aborting!"
-    echo -e "Have you installed babun as admin and run it from a non-admin account? Retry as admin."
-    exit 1
-  fi
+    if [ "$args" != "" ] && [ "$args" != "--force" ]; then echo "ERROR: Wrong argument $args"; exit 1; fi
+    echo "Executing babun update"
 
-  cp "$core"/tools/update_source.sh /tmp/update_source.sh
-  /tmp/update_source.sh "$args"
-  exit 0
+    permcheck=$( chmod 777 /usr/local/bin/babun 2> /dev/null || echo "FAILED" )
+    if [[  $permcheck == "FAILED" ]]; then
+        echo -e "ERROR: You don't have write permission to / filesystem. Aborting!"
+        echo -e "Have you installed babun as admin and run it from a non-admin account? Retry as admin."
+        exit 1
+    fi
+
+    cp "$core"/tools/update_source.sh /tmp/update_source.sh
+    /tmp/update_source.sh "$args"
+    exit 0
 }
 
 function install()
 {
-  if ! [[ $args == "" ]]; then echo "ERROR: Wrong argument $args"; exit 1; fi
-  echo "Executing babun install"
-  "$core"/plugins/install_home.sh
-  exit 0
+    local args="$1"
+    if ! [[ $args == "" ]]; then echo "ERROR: Wrong argument $args"; exit 1; fi
+    echo "Executing babun install"
+    "$core"/plugins/install_home.sh
+    exit 0
 }
 
 function check()
 {
+    local args="$1"
     if ! [[ $args == "" ]]; then echo "ERROR: Wrong argument $args"; exit 1; fi
     echo "Executing babun check"
     babun_check
@@ -146,74 +100,82 @@ function check()
 
 function shell()
 {
+    newshell="$1"
     passwd=$( sort -u /etc/passwd )
     if ! [[ -z "$passwd" ]]; then
         echo "$passwd" > /etc/passwd
     fi
-    newshell=$args
     currshell=$( awk "/^$USERNAME/ { print $1 }" /etc/passwd | grep -oh ":/.*sh" | grep -oP "(?<=.:)/.*" )
+
     if [[ $newshell == "" ]]; then
         echo "$currshell"
-    else
-        if ! [ -f $newshell ]; then
-           echo "ERROR: Cannot set shell to $newshell. Specified shell does not exist!"
-           exit 1
-        fi
-        echo "$currshell"
-        echo "$newshell"
-        sed -i "/^$USERNAME/s|$currshell|$newshell|" "/etc/passwd" || "ERROR: Changing shell to $newshell failed"
+        exit 0
     fi
+
+    if ! [ -f "$newshell" ]; then
+       echo "ERROR: Cannot set shell to $newshell. Specified shell does not exist!"
+       exit 1
+    fi
+
+    echo "$currshell"
+    echo "$newshell"
+    sed -i "/^$USERNAME/s|$currshell|$newshell|" "/etc/passwd" || echo "ERROR: Changing shell to $newshell failed" ; exit 1
 }
 
-function login()
-{
-    proc_shell_login
-}
-
-case "$command" in
-
-  update)
-
-    update
-  ;;
-
-
-  check)
-
-    check
-  ;;
-
-  shell)
-
-    shell
-  ;;
-
-  install)
-
-    install
-  ;;
-
-  login)
-
-    login
-  ;;
-
-  *)
-
-    # forward the execution to the plugin in the babun <plugin_name> cmd format
-    cmds=($args)
-    cmdsLength=${#cmds[@]}
-    if [ $cmdsLength -gt 0 ]; then
-      if [[ -f "$babun_plugins/${cmds[0]}/exec.sh" ]]; then
-        "$babun_plugins/${cmds[0]}/exec.sh" ${cmds[@]:1}
-      else
-        usage
-      fi
-    else
-      usage
-    fi
-  ;;
-
+# Main processing of inputs
+case $# in
+  0) usage ; exit 0 ;;
 esac
 
+case $1 in
+    --help)
+        usage
+        exit 0
+        ;;
 
+    --version)
+        version
+        exit 0
+        ;;
+
+    --welcome)
+        welcome
+        exit 0
+        ;;
+
+    --login|login)
+        # shellcheck disable=SC2119
+        proc_shell_login
+        exit 0
+        ;;
+
+    check)
+        shift; check "$@" ;;
+
+    install)
+        shift; install "$@" ;;
+
+    update)
+        shift; update "$@" ;;
+
+    shell)
+        shift; shell "$@" ;;
+
+    *)
+        # forward the execution to the plugin in the babun <plugin_name> cmd format
+        # the first input parameter should be the plugin name and the remainder are
+        # inputs to the plugin exec script.
+        plugin="$1"
+        shift
+        if [ $# -gt 0 ]; then
+            if [[ -f "$babun_plugins/$plugin/exec.sh" ]]; then
+                "$babun_plugins/$plugin/exec.sh" "$@"
+            else
+                usage
+            fi
+        else
+            usage
+        fi
+
+        ;;
+esac

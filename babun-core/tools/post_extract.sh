@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e -f -o pipefail
 source "/usr/local/etc/babun.instance"
+# shellcheck source=/usr/local/etc/babun/source/babun-core/tools/script.sh
 source "$babun_tools/script.sh"
 
 # fix symlinks on local instance
@@ -11,23 +12,23 @@ source "$babun_tools/script.sh"
 /bin/mv.exe /etc/postinstall/symlinks_repair.sh /etc/postinstall/symlinks_repair.sh.done
 
 # regenerate user/group information
-/bin/rm -rf /home
+/bin/rm -rf -- /home
 
 echo "[babun] HOME set to $HOME"
 
 if [[ ! "$HOME" == /cygdrive* ]]; then
-	echo "[babun] Running mkpasswd for CYGWIN home"
-	# regenerate users' info
-	/bin/mkpasswd.exe -l -c > /etc/passwd	
+    echo "[babun] Running mkpasswd for CYGWIN home"
+    # regenerate users' info
+    /bin/mkpasswd.exe -l -c > /etc/passwd
 
-	# remove spaces in username and user home folder (sic!)
-	# xuser=${USERNAME//[[:space:]]}
-	# xhome="\/home\/"
-	# /bin/sed -e "s/$USERNAME/$xuser/" -e "s/$xhome$USERNAME/$xhome$xuser/" -i /etc/passwd
+    # remove spaces in username and user home folder (sic!)
+    # xuser=${USERNAME//[[:space:]]}
+    # xhome="\/home\/"
+    # /bin/sed -e "s/$USERNAME/$xuser/" -e "s/$xhome$USERNAME/$xhome$xuser/" -i /etc/passwd
 else
-	echo "[babun] Running mkpasswd for WINDOWS home"
-	# regenerate users' info using windows paths
-	/bin/mkpasswd -l -c -p"$(/bin/cygpath -H)" > /etc/passwd
+    echo "[babun] Running mkpasswd for WINDOWS home"
+    # regenerate users' info using windows paths
+    /bin/mkpasswd -l -c -p"$(/bin/cygpath -H)" > /etc/passwd
 fi
 /bin/mkgroup -l -c > /etc/group
 

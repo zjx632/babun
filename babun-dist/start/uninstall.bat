@@ -5,10 +5,10 @@ set SCRIPT_PATH=%~dp0
 set SCRIPT_PATH=%SCRIPT_PATH:\=/%
 set BABUN_HOME=%SCRIPT_PATH%
 
-SET /p answer="Do you really want to uninstall babun (Y / N)?" 
+SET /p answer="Do you really want to uninstall babun (Y / N)?
 IF "%answer:~0,1%"=="Y" GOTO UNIINSTALL
 IF "%answer:~0,1%"=="y" GOTO UNIINSTALL
-EXIT /b 255	
+EXIT /b 255
 
 :UNIINSTALL
 set CYGWIN_HOME=%BABUN_HOME%\cygwin

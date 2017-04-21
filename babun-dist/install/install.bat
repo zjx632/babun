@@ -13,9 +13,9 @@ set LOG_FILE=%SCRIPT_PATH%/installer.log
 ECHO [babun] Installing babun
 
 if %1.==. (
-	set BABUN_HOME=%USERPROFILE%\.babun
-	set TARGET=%USERPROFILE%
-	GOTO CHECKTARGET
+    set BABUN_HOME=%USERPROFILE%\.babun
+    set TARGET=%USERPROFILE%
+    GOTO CHECKTARGET
 )
 if "%1"=="/t" GOTO TARGET
 if "%1"=="/target" (GOTO TARGET || GOTO UNKNOWNFLAG)
@@ -60,25 +60,25 @@ if defined istext (
 )
 
 if %FREE_SPACE% lss 1024 (
-	ECHO [babun] ERROR: There is not enough space on your destination drive %DRIVE_LETTER%
-	ECHO [babun] ERROR: Babun requires at least 1024 MB to operate properly
-	ECHO [babun] ERROR: Free Space on %DRIVE_LETTER% %FREE_SPACE% MB
-	ECHO [babun] ERROR: Please install babun to another destination using the /target option:
-	ECHO [babun] install.bat /target "D:\target_folder"
+    ECHO [babun] ERROR: There is not enough space on your destination drive %DRIVE_LETTER%
+    ECHO [babun] ERROR: Babun requires at least 1024 MB to operate properly
+    ECHO [babun] ERROR: Free Space on %DRIVE_LETTER% %FREE_SPACE% MB
+    ECHO [babun] ERROR: Please install babun to another destination using the /target option:
+    ECHO [babun] install.bat /target "D:\target_folder"
     PAUSE
-	EXIT /b 255
+    EXIT /b 255
 )
 
 :CHECKHOME
 IF "%HOME%"=="" (
-	ECHO [babun] HOME variable not set
-	GOTO UNZIP
+    ECHO [babun] HOME variable not set
+    GOTO UNZIP
 )
 
 :SKIPHOMESET
 IF "%NOCHECK%"=="true" (
-	ECHO [babun] WARN: NOCHECK set to true
-	GOTO UNZIP
+    ECHO [babun] WARN: NOCHECK set to true
+    GOTO UNZIP
 )
 
 :HOMESET

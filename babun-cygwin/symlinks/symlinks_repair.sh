@@ -1,11 +1,11 @@
-﻿#!/bin/bash
+#!/bin/bash
 #set -e -f -o pipefail -> don't use it, not required
 filename="/etc/postinstall/symlinks_broken.txt"
 
 # verify if the file exist
 if [ ! -f $filename ]; then
-	echo "Cannot find file with broken symlinks: $filename"
-	exit -1
+    echo "Cannot find file with broken symlinks: $filename"
+    exit -1
 fi
 
 # read the content of the file
@@ -15,7 +15,7 @@ i=0
 while read -r line
 do
     array[ $i ]=$line
-    (( i++ ))    
+    (( i++ ))
 done < "$filename"
 
 # set DOS SYSTEM flag on the symlink files

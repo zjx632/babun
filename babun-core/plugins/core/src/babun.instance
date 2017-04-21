@@ -1,3 +1,4 @@
+# shellcheck disable=SC2034
 babun=/usr/local/etc/babun
 babun_source="$babun/source"
 babun_plugins="$babun/source/babun-core/plugins"

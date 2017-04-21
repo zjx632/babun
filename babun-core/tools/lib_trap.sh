@@ -1,3 +1,5 @@
+#!/bin/bash
+
 lib_name='trap'
 lib_version=20121026
 
@@ -46,7 +48,7 @@ function exit_handler ()
     #
     # LOCAL VARIABLES:
     # ------------------------------------------------------------------
-    #    
+    #
     local i=0
     local regex=''
     local mem=''
@@ -86,31 +88,32 @@ function exit_handler ()
     # ------------------------------------------------------------------
     #
 
-    if test -n "$stderr"
-        then        
-            # Exploding stderr on :
-            mem="$IFS"
-            local shrunk_stderr=$( echo "$stderr" | sed 's/\: /\:/g' )
-            IFS=':'
-            local stderr_parts=( $shrunk_stderr )
-            IFS="$mem"
+    # seems 'stderr' was always commented out so the following section will never do anything
+    # if test -n "$stderr"
+    #     then
+    #         # Exploding stderr on :
+    #         mem="$IFS"
+    #         local shrunk_stderr=$( echo "$stderr" | sed 's/\: /\:/g' )
+    #         IFS=':'
+    #         local stderr_parts=( $shrunk_stderr )
+    #         IFS="$mem"
 
-            # Storing information on the error
-            error_file="${stderr_parts[0]}"
-            error_lineno="${stderr_parts[1]}"
-            error_message=""
+    #         # Storing information on the error
+    #         error_file="${stderr_parts[0]}"
+    #         error_lineno="${stderr_parts[1]}"
+    #         error_message=""
 
-            for (( i = 3; i <= ${#stderr_parts[@]}; i++ ))
-                do
-                    error_message="$error_message "${stderr_parts[$i-1]}": "
-            done
+    #         for (( i = 3; i <= ${#stderr_parts[@]}; i++ ))
+    #             do
+    #                 error_message="$error_message "${stderr_parts[$i-1]}": "
+    #         done
 
-            # Removing last ':' (colon character)
-            error_message="${error_message%:*}"
+    #         # Removing last ':' (colon character)
+    #         error_message="${error_message%:*}"
 
-            # Trim
-            error_message="$( echo "$error_message" | sed -e 's/^[ \t]*//' | sed -e 's/[ \t]*$//' )"
-    fi
+    #         # Trim
+    #         error_message="$( echo "$error_message" | sed -e 's/^[ \t]*//' | sed -e 's/[ \t]*$//' )"
+    # fi
 
     #
     # GETTING BACKTRACE:
@@ -137,7 +140,7 @@ function exit_handler ()
             echo -e "FILE:\t\t${error_file}"
             echo -e "${row^^}:\t\t${lineno}\n"
 
-            echo -e "ERROR CODE:\t${error_code}"             
+            echo -e "ERROR CODE:\t${error_code}"
             test -t 1 && tput setf 6                                    ## white yellow
             echo -e "ERROR MESSAGE:\n$error_message"
 
@@ -155,7 +158,7 @@ function exit_handler ()
 
                     echo -e "ERROR CODE:\t${error_code}"
                     test -t 1 && tput setf 6                            ## white yellow
-                    echo -e "ERROR MESSAGE:\n${stderr}"
+                    # echo -e "ERROR MESSAGE:\n${stderr}"
 
                 # Neither the error line nor the error file was found on the log
                 # (e.g. type 'cp ffd fdf' without quotes wherever)
@@ -172,7 +175,7 @@ function exit_handler ()
                     # Substring: I keep only the carriage return
                     # (others needed only for tabbing purpose)
                     IFS=${IFS:0:1}
-                    local lines=( $_backtrace )
+                    local lines=( "$_backtrace" )
 
                     IFS=$mem
 
@@ -180,7 +183,7 @@ function exit_handler ()
 
                     if test -n "${lines[1]}"
                         then
-                            array=( ${lines[1]} )
+                            array=( "${lines[1]}" )
 
                             for (( i=2; i<${#array[@]}; i++ ))
                                 do
@@ -196,12 +199,14 @@ function exit_handler ()
 
                     echo -e "ERROR CODE:\t${error_code}"
                     test -t 1 && tput setf 6                            ## white yellow
-                    if test -n "${stderr}"
-                        then
-                            echo -e "ERROR MESSAGE:\n${stderr}"
-                        else
-                            echo -e "ERROR MESSAGE:\n${error_message}"
-                    fi
+                    echo -e "ERROR MESSAGE:\n${error_message}"
+                    # stderr will never have a value
+                    # if test -n "${stderr}"
+                    #     then
+                    #         echo -e "ERROR MESSAGE:\n${stderr}"
+                    #     else
+                    #         echo -e "ERROR MESSAGE:\n${error_message}"
+                    # fi
             fi
     fi
 

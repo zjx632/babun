@@ -1,11 +1,11 @@
 #!/bin/bash
+# shellcheck disable=SC2129
 set -e -f -o pipefail
 
 readme="../README.adoc"
-cat /dev/null > "$readme"
 
-echo "// THIS DOCUMENT WAS GENERATED. DO NOT EDIT IT.\n" >> adoc/_header.adoc
-
+echo "// THIS DOCUMENT WAS GENERATED. DO NOT EDIT IT." > "$readme"
+echo "" >> "$readme"
 cat adoc/_header.adoc >> "$readme"
 cat adoc/_screencast.adoc >> "$readme"
 cat adoc/_installation.adoc >> "$readme"

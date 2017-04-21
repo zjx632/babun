@@ -7,8 +7,10 @@ source "/usr/local/etc/babun.instance"
 export CYGWIN_VERSION=${PROCESSOR_ARCHITECTURE/AMD64/x86_64}
 export CYGWIN="nodosfilewarning mintty"
 export TERM=xterm-256color
-export CYGWIN_HOME="$( /usr/bin/cygpath.exe -ma '/' )"
-export BABUN_HOME="$( echo "$CYGWIN_HOME" | /usr/bin/sed.exe "s#/cygwin##g" )"
+export CYGWIN_HOME
+CYGWIN_HOME="$( /usr/bin/cygpath.exe -ma '/' )"
+export BABUN_HOME
+BABUN_HOME="$( echo "$CYGWIN_HOME" | /usr/bin/sed.exe "s#/cygwin##g" )"
 
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
@@ -64,7 +66,7 @@ if [ ! -d "$HOME_LOCAL_BIN" ] ; then
 fi
 
 if [ ! -d "$HOME_BIN" ] ; then
-	ln -s "$HOME_LOCAL_BIN" "$HOME_BIN"
+    ln -s "$HOME_LOCAL_BIN" "$HOME_BIN"
 fi
 
 PATH="$HOME_LOCAL_BIN:$PATH"
@@ -74,6 +76,6 @@ PATH="$HOME_LOCAL_BIN:$PATH"
 # install babun to user's home folder if it does not exist
 #
 if [[ ! -f "$homedir/.babunrc" ]]; then
-	echo "Installing babun to user home"
-	babun install
+    echo "Installing babun to user home"
+    babun install
 fi

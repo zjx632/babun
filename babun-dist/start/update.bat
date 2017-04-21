@@ -15,41 +15,41 @@ if not exist "%WGET%" goto NOTFOUND
 
 :PARSE
 IF "%~1"=="" (
-	GOTO RUN
+    GOTO RUN
 )
 
 :PARSESITE
 if "%~1"=="/site" (
-	GOTO DOPARSESITE
+    GOTO DOPARSESITE
 )
 GOTO AFTERPARSESITE
 
 :DOPARSESITE
-	SHIFT
-	if %~1.==. (
-		GOTO MIRRORNOTSET
-	)
-	set MIRROR=%~1
-	SHIFT
-	GOTO PARSE
+    SHIFT
+    if %~1.==. (
+        GOTO MIRRORNOTSET
+    )
+    set MIRROR=%~1
+    SHIFT
+    GOTO PARSE
 )
 
 :AFTERPARSESITE
 
 :PARSEPROXY
 if "%~1"=="/proxy" (
-	GOTO DOPARSEPROXY
+    GOTO DOPARSEPROXY
 )
 GOTO AFTERPARSEPROXY
 
 :DOPARSEPROXY
-	SHIFT
-	if %~1.==. (
-		GOTO PROXYNOTSET
-	)
-	set PROXY=%~1
-	SHIFT
-	GOTO PARSE
+    SHIFT
+    if %~1.==. (
+        GOTO PROXYNOTSET
+    )
+    set PROXY=%~1
+    SHIFT
+    GOTO PARSE
 )
 :AFTERPARSEPROXY
 
@@ -57,8 +57,8 @@ GOTO UNKNOWNFLAG
 
 :RUN
 if "%MIRROR%"=="" (
-	set MIRROR=http://mirrors.kernel.org/sourceware/cygwin
-	GOTO RUN
+    set MIRROR=http://mirrors.kernel.org/sourceware/cygwin
+    GOTO RUN
 )
 
 echo [babun] Upgrading Cygwin from %MIRROR%
@@ -79,22 +79,22 @@ echo [babun] Preparing setup.rc config
 set /p RUNNING_COUNT=<"%DIST_DIR%/running_count"
 
 if NOT "%RUNNING_COUNT%"=="0" (
-	echo [babun] ERROR: There's %RUNNING_COUNT% running babun instance[s]. Close all babun windows [mintty processes] and try again.
-	GOTO BABUNRUNNING
+    echo [babun] ERROR: There's %RUNNING_COUNT% running babun instance[s]. Close all babun windows [mintty processes] and try again.
+    GOTO BABUNRUNNING
 )
 
 "%BASH%" -c "source ~/.babunrc; /bin/rm.exe -f /etc/setup/setup.rc;" || goto :ERROR
 rem Due to bug in setup.exe's quiet-mode the /etc/setup/setup.rc file is not read anyway...
 rem "%BASH%" -c "source ~/.babunrc; /bin/echo.exe 'net-method' >> /etc/setup/setup.rc" || goto :ERROR
-rem "%BASH%" -c "source ~/.babunrc; /bin/echo.exe '	IE' >> /etc/setup/setup.rc" || goto :ERROR
+rem "%BASH%" -c "source ~/.babunrc; /bin/echo.exe ' IE' >> /etc/setup/setup.rc" || goto :ERROR
 rem "%BASH%" -c "source ~/.babunrc; /bin/echo.exe 'last-action' >> /etc/setup/setup.rc" || goto :ERROR
-rem "%BASH%" -c "source ~/.babunrc; /bin/echo.exe '	Download,Install' >> /etc/setup/setup.rc" || goto :ERROR
+rem "%BASH%" -c "source ~/.babunrc; /bin/echo.exe ' Download,Install' >> /etc/setup/setup.rc" || goto :ERROR
 
 :SETUPPROXY
 if "%PROXY%"=="" (
-	echo [babun] Proxy flag not set, trying to read the proxy from ~/.babunrc
-	"%BASH%" -c "source ~/.babunrc && echo $http_proxy | /bin/sed.exe 's,http://,,g' | /bin/gawk.exe '{n=split($0,a,\"@\"); print a[n]}'" > "%DIST_DIR%/proxy"
-	set /p PROXY=<"%DIST_DIR%/proxy"
+    echo [babun] Proxy flag not set, trying to read the proxy from ~/.babunrc
+    "%BASH%" -c "source ~/.babunrc && echo $http_proxy | /bin/sed.exe 's,http://,,g' | /bin/gawk.exe '{n=split($0,a,\"@\"); print a[n]}'" > "%DIST_DIR%/proxy"
+    set /p PROXY=<"%DIST_DIR%/proxy"
 )
 
 if "%PROXY%" == "" (

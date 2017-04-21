@@ -1,0 +1,16 @@
+FROM koalaman/shellcheck
+
+RUN apk add --no-cache \
+        bash \
+    && rm -f /var/cache/apk/*
+
+RUN addgroup -S tester && adduser -S -G tester tester
+
+COPY babun-core/plugins/core/src/babun.instance /usr/local/etc/babun.instance
+COPY babun-core/plugins/core/src/babun.rc /usr/local/etc/babun.rc
+COPY babun-core/plugins/pact/src/pact.repo /home/tester/.pact/pact.repo
+
+ENV HOME=/home/tester
+
+# reset the entrypoint
+ENTRYPOINT []

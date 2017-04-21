@@ -1,8 +1,6 @@
 #!/bin/bash
 # set -e -f -o pipefail
 source "/usr/local/etc/babun.instance"
-# does not work with pact - it's unnecessary anyway
-# source "$babun_tools/script.sh"
 
 function check_only_one_running {
     if ! [ -d /var/lock ]; then
@@ -10,7 +8,7 @@ function check_only_one_running {
     fi
 
     proc_name=$1
-    if mkdir /var/lock/$proc_name 2>/dev/null ; then
+    if mkdir /var/lock/"$proc_name" 2>/dev/null ; then
         trap 'rm -rf "/var/lock/$proc_name"; exit $?' INT TERM EXIT
     else
         echo "You can run only one instance of $proc_name. Close all other instances of $proc_name or delete the /var/lock/$proc_name/ directory if you are sure there are no other instances currently running.";
@@ -25,11 +23,11 @@ function proc_exec_on_script_finish_trap {
 function proc_shell_login {
     currshell=$( awk "/^$USERNAME/ { print $1 }" /etc/passwd | grep -oh ":/.*sh" | grep -oP "(?<=.:)/.*" )
     if ! [[ $currshell == "" ]]; then
-        echo Login to default shell $currshell
+        echo "Login to default shell $currshell"
         proc_exec_on_script_finish_trap
-        exec $currshell
+        exec "$currshell"
     else
-        echo Could not login to default shell >&2
+        echo 'Could not login to default shell' >&2
         exit 1
     fi
 }

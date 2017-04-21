@@ -4,17 +4,19 @@ set -f -o pipefail
 # set -e
 
 source "/usr/local/etc/babun.instance"
-# source "$babun_tools/script.sh"
+# shellcheck source=/usr/local/etc/babun/source/babun-core/tools/check.sh
 source "$babun_tools/check.sh"
+# shellcheck source=/usr/local/etc/babun/source/babun-core/tools/procps.sh
 source "$babun_tools/procps.sh"
+# shellcheck source=/home/tester/.pact/pact.repo
 source ~/.pact/pact.repo
 
 # this script requires some packages
-WGET=`which wget 2> /dev/null`
-BZIP2=`which bzip2 2> /dev/null`
-TAR=`which tar 2> /dev/null`
-GAWK=`which awk 2> /dev/null`
-XZ=`which xz 2> /dev/null`
+WGET=$(which wget 2> /dev/null)
+BZIP2=$(which bzip2 2> /dev/null)
+TAR=$(which tar 2> /dev/null)
+GAWK=$(which awk 2> /dev/null)
+XZ=$(which xz 2> /dev/null)
 if test "-$WGET-" = "--" || test "-$BZIP2-" = "--" || test "-$TAR-" = "--" \
   || test "-$GAWK-" = "--" || test "-$XZ-" = "--"
 then
@@ -62,52 +64,51 @@ function findworkspace()
 {
   # default working directory and mirror
 
-  mirror=$PACT_REPO
-  if [[ -z $mirror ]]; then
-  echo "WARNINIG! ~/.pact/pact.repo does not contains \$PACT_REPO mirror address. Using the default one!"
-  mirror=http://mirrors.kernel.org/sourceware/cygwin/
-  fi
-  cache=/setup
+    mirror=$PACT_REPO
+    if [[ -z $mirror ]]; then
+        echo "WARNINIG! ~/.pact/pact.repo does not contains $PACT_REPO mirror address. Using the default one!"
+        mirror=http://mirrors.kernel.org/sourceware/cygwin/
+    fi
+    cache=/setup
 
-  # work wherever setup worked last, if possible
-  mirrordir="`echo "$mirror" | sed -e "s/:/%3a/g" -e "s:/:%2f:g"`"
+    # work wherever setup worked last, if possible
+    mirrordir="$(echo "$mirror" | sed -e "s/:/%3a/g" -e "s:/:%2f:g")"
 
-  echo Working directory is $cache
-  echo Mirror is $mirror
-  mkdir -p "$cache/$mirrordir"
-  cd "$cache/$mirrordir"
+    echo "Working directory is $cache"
+    echo "Mirror is $mirror"
+    mkdir -p "$cache/$mirrordir"
+    cd "$cache/$mirrordir" || return
 }
 
 
 function getsetup()
 {
-#
-  currdir="$(pwd)"
-  if test "$noscripts" == "0"
-  then
-    if test "$invalidate" == "0" && [ -s "$currdir/setup.ini" ] && [ -s "$currdir/setup.ini-save" ] && [ $(find "$currdir" -mtime 0 -type f -regex '.*setup.ini-save' 2>/dev/null) ] && cmp -s "$currdir/setup.ini" "$currdir/setup.ini-save" ; then
-    echo "setup.ini taken from the cache"
-  else
-    touch setup.ini
-    mv setup.ini setup.ini-save
-    wget --user-agent="$USER_AGENT" -N $mirror/$CYGWIN_VERSION/setup.bz2
-    if test -e setup.bz2 && test $? -eq 0
+    currdir="$(pwd)"
+    if test "$noscripts" == "0"
     then
-      bunzip2 setup.bz2
-      mv setup setup.ini
-      echo Updated setup.ini
-    else
-      wget --user-agent="$USER_AGENT" -N $mirror/$CYGWIN_VERSION/setup.ini
-      if test -e setup.ini && test $? -eq 0
-      then
-      echo Updated setup.ini
-      else
-      mv setup.ini-save setup.ini
-      echo Error updating setup.ini, reverting
-      fi
+        if test "$invalidate" == "0" && [ -s "$currdir/setup.ini" ] && [ -s "$currdir/setup.ini-save" ] && [ "$(find "$currdir" -mtime 0 -type f -regex '.*setup.ini-save' 2>/dev/null)" ] && cmp -s "$currdir/setup.ini" "$currdir/setup.ini-save" ; then
+            echo "setup.ini taken from the cache"
+        else
+            touch setup.ini
+            mv setup.ini setup.ini-save
+            wget --user-agent="$USER_AGENT" -N "$mirror/$CYGWIN_VERSION/setup.bz2"
+            if test -e setup.bz2 && test $? -eq 0
+            then
+                bunzip2 setup.bz2
+                mv setup setup.ini
+                echo "Updated setup.ini"
+            else
+                wget --user-agent="$USER_AGENT" -N "$mirror/$CYGWIN_VERSION/setup.ini"
+                if test -e setup.ini && test $? -eq 0
+                then
+                    echo "Updated setup.ini"
+                else
+                    mv setup.ini-save setup.ini
+                    echo "Error updating setup.ini, reverting"
+                fi
+            fi
+        fi
     fi
-  fi
-  fi
 }
 
 
@@ -125,37 +126,40 @@ noscripts=0
 invalidate=0
 file=""
 command=""
-filepackages=""
 packages=""
 force=0
 
 function checkCygwin() {
-  if test "$noscripts" == "0"
-  then
-    # Check if the underlying Cygwin distribution is up to date
-    local newest_cygwin_version=$( get_newest_cygwin_version )
-    if [[ -z "$newest_cygwin_version" ]]; then
-      echo -e "[WARNING] Could not check the Cygwin distribution version. Installed packages may not work!"
-      return
-    else
-      local newest_cygwin_version_number=$( get_version_as_number $newest_cygwin_version )
-      local current_cygwin_version=$( get_current_cygwin_version )
-      local current_cygwin_version_number=$( get_version_as_number $current_cygwin_version )
-      if [[ $newest_cygwin_version_number -gt $current_cygwin_version_number ]]; then
-        if [[ force -eq 1 ]]; then
-            echo -e "CRITICAL: The underlying Cygwin version is outdated! Force option enabled - continuing!"
+    if test "$noscripts" == "0"
+    then
+        # Check if the underlying Cygwin distribution is up to date
+        local newest_cygwin_version
+        newest_cygwin_version=$( get_newest_cygwin_version )
+        if [[ -z "$newest_cygwin_version" ]]; then
+            echo -e "[WARNING] Could not check the Cygwin distribution version. Installed packages may not work!"
+            return
         else
-            echo -e "-------------------------------------------------------------------------------"
-            echo -e "CRITICAL: The underlying Cygwin version is outdated!"
-            echo -e "It's forbidden to install new packages as they may fail to work."
-            echo -e "Execute 'babun update' and follow the instructions to update Cygwin."
-            echo -e "If you know what you are doing add '--force' flag to proceed."
-            echo -e "-------------------------------------------------------------------------------"
-            exit 1
+            local newest_cygwin_version_number
+            newest_cygwin_version_number=$( get_version_as_number "$newest_cygwin_version" )
+            local current_cygwin_version
+            current_cygwin_version=$( get_current_cygwin_version )
+            local current_cygwin_version_number
+            current_cygwin_version_number=$( get_version_as_number "$current_cygwin_version" )
+            if [[ $newest_cygwin_version_number -gt $current_cygwin_version_number ]]; then
+                if [[ force -eq 1 ]]; then
+                    echo -e "CRITICAL: The underlying Cygwin version is outdated! Force option enabled - continuing!"
+                else
+                    echo -e "-------------------------------------------------------------------------------"
+                    echo -e "CRITICAL: The underlying Cygwin version is outdated!"
+                    echo -e "It's forbidden to install new packages as they may fail to work."
+                    echo -e "Execute 'babun update' and follow the instructions to update Cygwin."
+                    echo -e "If you know what you are doing add '--force' flag to proceed."
+                    echo -e "-------------------------------------------------------------------------------"
+                    exit 1
+                fi
+            fi
         fi
-      fi
     fi
-  fi
 }
 
 function installPkg()
@@ -164,35 +168,34 @@ function installPkg()
  for pkg in $packages
     do
 
-    already=`grep -c "^$pkg " /etc/setup/installed.db`
-    if test $already -ge 1
+    already=$(grep -c "^$pkg " /etc/setup/installed.db)
+    if test "$already" -ge 1
     then
-      echo Package $pkg is already installed, skipping
+      echo "Package $pkg is already installed, skipping"
       continue
     fi
     echo ""
-    echo Installing $pkg
+    echo "Installing $pkg"
 
     # look for package and save desc file
 
     mkdir -p "release/$pkg"
     cat setup.ini | awk > "release/$pkg/desc" -v package="$pkg" \
-      'BEGIN{RS="\n\n@ "; FS="\n"} {if ($1 == package) {desc = $0; px++}} \
-       END {if (px == 1 && desc != "") print desc; else print "Package not found"}'
+      'BEGIN{RS="\n\n@ "; FS="\n"} {if ($1 == package) {desc = $0; px++}} END {if (px == 1 && desc != "") print desc; else print "Package not found"}'
 
-    desc=`cat "release/$pkg/desc"`
+    desc=$(cat "release/$pkg/desc")
     if test "-$desc-" = "-Package not found-"
     then
-      echo Package $pkg not found or ambiguous name, exiting
+      echo "Package $pkg not found or ambiguous name, exiting"
       rm -r "release/$pkg"
       exit 1
     fi
-    echo Found package $pkg
+    echo Found package "$pkg"
 
     # download and unpack the bz2 file
 
     # pick the latest version, which comes first
-    install=`cat "release/$pkg/desc" | awk '/^install: / { print $2; exit }'`
+    install=$(cat "release/$pkg/desc" | awk '/^install: / { print $2; exit }')
 
     if test "-$install-" = "--"
     then
@@ -200,20 +203,20 @@ function installPkg()
       exit 1
     fi
 
-    file=`basename $install`
-    cd "release/$pkg"
-    wget --user-agent="$USER_AGENT" -nc $mirror/$install
+    file=$(basename "$install")
+    cd "release/$pkg" || return
+    wget --user-agent="$USER_AGENT" -nc "$mirror/$install"
 
     # check the verification hash (md5 or sha512)
-    digest=`cat "desc" | awk '/^install: / { print $4; exit }'`
-    md5digactual=`md5sum $file | awk '{print $1}'`
-    if ! [[ $digest == $md5digactual ]]
+    digest=$(cat "desc" | awk '/^install: / { print $4; exit }')
+    md5digactual=$(md5sum "$file" | awk '{print $1}')
+    if ! [[ $digest == "$md5digactual" ]]
     then
-      shadigactual=`sha512sum $file | awk '{print $1}'`
-      if ! [[ $digest == $shadigactual ]]
+      shadigactual=$(sha512sum "$file" | awk '{print $1}')
+      if ! [[ $digest == "$shadigactual" ]]
       then
-        echo Verification hash did not match, exiting
-        rm $file # Remove the file with bad checksum
+        echo "Verification hash did not match, exiting"
+        rm "$file" # Remove the file with bad checksum
         exit 1
       fi
     fi
@@ -221,19 +224,18 @@ function installPkg()
     echo "Unpacking..."
     #determine file type
     if [ "${file##*.}" == "xz" ]; then
-      cat $file | tar > "/etc/setup/$pkg.lst" xvJf - -C /
+      cat "$file" | tar > "/etc/setup/$pkg.lst" xvJf - -C /
     else
-      cat $file | bunzip2 | tar > "/etc/setup/$pkg.lst" xvf - -C /
+      cat "$file" | bunzip2 | tar > "/etc/setup/$pkg.lst" xvf - -C /
     fi
     gzip -f "/etc/setup/$pkg.lst"
-    cd ../..
+    cd ../.. || return
 
 
     # update the package database
 
-    cat /etc/setup/installed.db | awk > /tmp/awk.$$ -v pkg="$pkg" -v bz=$file \
-      '{if (ins != 1 && pkg < $1) {print pkg " " bz " 0"; ins=1}; print $0} \
-       END{if (ins != 1) print pkg " " bz " 0"}'
+    cat /etc/setup/installed.db | awk > /tmp/awk.$$ -v pkg="$pkg" -v bz="$file" \
+      '{if (ins != 1 && pkg < $1) {print pkg " " bz " 0"; ins=1}; print $0} END{if (ins != 1) print pkg " " bz " 0"}'
     mv /etc/setup/installed.db /etc/setup/installed.db-save
     mv /tmp/awk.$$ /etc/setup/installed.db
 
@@ -241,22 +243,22 @@ function installPkg()
     # recursively install required packages
 
     echo > /tmp/awk.$$ '/^requires: / {s=gensub("(requires: )?([^ ]+) ?", "\\2 ", "g", $0); print s}'
-    requires=`cat "release/$pkg/desc" | awk -f /tmp/awk.$$`
+    requires=$(cat "release/$pkg/desc" | awk -f /tmp/awk.$$)
 
     warn=0
     if ! test "-$requires-" = "--"
     then
-      echo Package $pkg requires the following packages, installing:
-      echo $requires
+      echo "Package $pkg requires the following packages, installing:"
+      echo "$requires"
       for package in $requires
       do
-        already=`grep -c "^$package " /etc/setup/installed.db`
-        if test $already -ge 1
+        already=$(grep -c "^$package " /etc/setup/installed.db)
+        if test "$already" -ge 1
         then
-          echo Package $package is already installed, skipping
+          echo "Package $package is already installed, skipping"
           continue
         fi
-        pact --noscripts install $package
+        pact --noscripts install "$package"
         if ! test $? = 0 ; then warn=1; fi
       done
     fi
@@ -269,15 +271,16 @@ function installPkg()
 
     if ! test $noscripts -eq 1
     then
-      for script in `find /etc/postinstall/ -name *.sh`
+      mapfile -t pscripts < <(find /etc/postinstall/ -name '*.sh')
+      for script in "${pscripts[@]}"
       do
-        echo Running postinstall script: $script
-        $script
-        mv $script $script.done
+        echo "Running postinstall script: $script"
+        "$script"
+        mv "$script" "$script.done"
       done
     fi
 
-    echo Package $pkg installed
+    echo "Package $pkg installed"
 
     done
 }
@@ -288,10 +291,10 @@ function removePkg()
  for pkg in $packages
     do
 
-    already=`grep -c "^$pkg " /etc/setup/installed.db`
-    if test $already = 0
+    already=$(grep -c "^$pkg " /etc/setup/installed.db)
+    if test "$already" = 0
     then
-      echo Package $pkg is not installed, skipping
+      echo "Package $pkg is not installed, skipping"
       continue
     fi
 
@@ -300,17 +303,17 @@ function removePkg()
     do
       if test "-$pkg-" = "-$req-"
       then
-        echo pact cannot remove package $pkg, exiting
+        echo "pact cannot remove package $pkg, exiting"
         exit 1
       fi
     done
 
     if ! test -e "/etc/setup/$pkg.lst.gz"
     then
-      echo Package manifest missing, cannot remove $pkg.  Exiting
+      echo "Package manifest missing, cannot remove $pkg.  Exiting"
       exit 1
     fi
-    echo Removing $pkg
+    echo "Removing $pkg"
 
     # run preremove scripts
 
@@ -326,7 +329,7 @@ function removePkg()
     cat /etc/setup/installed.db | awk > /tmp/awk.$$ -v pkg="$pkg" '{if (pkg != $1) print $0}'
     mv /etc/setup/installed.db /etc/setup/installed.db-save
     mv /tmp/awk.$$ /etc/setup/installed.db
-    echo Package $pkg removed
+    echo "Package $pkg removed"
 
     done
 }
@@ -417,10 +420,10 @@ case "$command" in
     for pkg in $packages
     do
       echo ""
-      echo Searching for installed packages matching $pkg:
+      echo "Searching for installed packages matching $pkg:"
       awk '/[^ ]+ [^ ]+ 0/ {if ($1 ~ query) print $1}' query="$pkg" /etc/setup/installed.db
       echo ""
-      echo Searching for installable packages matching $pkg:
+      echo "Searching for installable packages matching $pkg:"
       cat setup.ini | awk -v query="$pkg" \
         'BEGIN{RS="\n\n@ "; FS="\n"; ORS="\n"} {if ($1 ~ query) {print $1}}'
     done
@@ -448,19 +451,19 @@ case "$command" in
     checkpackages
     for pkg in $packages
     do
-      key=`which "$pkg" 2>/dev/null | sed "s:^/::"`
+      key=$(which "$pkg" 2>/dev/null | sed "s:^/::")
       if test "-$key-" = "--"
       then
         key="$pkg"
       fi
-      declare -a manifests=($(find /etc/setup -type f -name '*.lst.gz'))
+      mapfile -t manifests < <(find /etc/setup -type f -name '*.lst.gz')
       for manifest in "${manifests[@]}"
       do
-        found=`cat $manifest | gzip -d | grep -o "$key" | wc -l`
-        if test $found -gt 0
+        found=$(cat "$manifest" | gzip -d | grep -o "$key" | wc -l)
+        if test "$found" -gt 0
         then
-          package=`echo $manifest | sed -e "s:/etc/setup/::" -e "s/.lst.gz//"`
-          echo Found $key in the package $package
+          package=$(echo "$manifest" | sed -e "s:/etc/setup/::" -e "s/.lst.gz//")
+          echo "Found $key in the package $package"
         fi
       done
     done
