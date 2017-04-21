@@ -12,45 +12,56 @@ source "$babun_tools/procps.sh"
 source ~/.pact/pact.repo
 
 # this script requires some packages
-WGET=$(which wget 2> /dev/null)
-BZIP2=$(which bzip2 2> /dev/null)
-TAR=$(which tar 2> /dev/null)
-GAWK=$(which awk 2> /dev/null)
-XZ=$(which xz 2> /dev/null)
-if test "-$WGET-" = "--" || test "-$BZIP2-" = "--" || test "-$TAR-" = "--" \
-  || test "-$GAWK-" = "--" || test "-$XZ-" = "--"
-then
-  echo You must install wget, tar, gawk, bzip2 and xz to use pact.
-  exit 1
+if     [[ -z $(which wget 2> /dev/null) ]] \
+    || [[ -z $(which bzip2 2> /dev/null) ]] \
+    || [[ -z $(which tar 2> /dev/null) ]] \
+    || [[ -z $(which awk 2> /dev/null) ]] \
+    || [[ -z $(which xz 2> /dev/null) ]]; then
+
+    echo "You must install wget, tar, gawk, bzip2 and xz to use pact."
+    exit 1
 fi
 
 if [ -z "$USER_AGENT" ]; then
   USER_AGENT="Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)"
 fi
 
+## Global Variables
+
+# default to the value sourced from the user repo configuration
+MIRROR=$PACT_REPO
+DEFAULT_MIRROR=http://mirrors.kernel.org/sourceware/cygwin/
+
+SETUP_DIR=/etc/setup
+INSTALLED_DB="$SETUP_DIR/installed.db"
+SETUP_FILE=setup.ini
+
+# Global Process Options
+NOSCRIPTS=0
+INVALIDATE=0
+FORCE=0
+
 
 function usage()
 {
-  echo pact: Installs and removes Cygwin packages.
+  echo "pact: Installs and removes Cygwin packages."
   echo ""
   echo "Usage:"
-  echo "  \"pact install <package names>\" to install given packages"
-  echo "  \"pact remove <package names>\" to remove given packages"
-  echo "  \"pact update <package names>\" to update given packages"
+  echo "  \"pact [OPTION] install <package names>\" to install given packages"
+  echo "  \"pact [OPTION] remove <package names>\" to remove given packages"
+  echo "  \"pact [OPTION] update <package names>\" to update given packages"
   echo "  \"pact show\" to show installed packages"
-  echo "  \"pact find <patterns>\" to find packages matching patterns"
-  echo "  \"pact describe <patterns>\" to describe packages matching patterns"
+  echo "  \"pact [OPTION] find <patterns>\" to find packages matching patterns"
+  echo "  \"pact [OPTION] describe <patterns>\" to describe packages matching patterns"
   echo "  \"pact packageof <commands or files>\" to locate parent packages"
-  echo "  \"pact invalidate\" to invalidate pact caches (setup.ini, etc.)"
+  echo "  \"pact invalidate\" to invalidate pact caches ($SETUP_FILE, etc.)"
   echo "Options:"
   echo "  --mirror, -m <url> : set mirror"
-  echo "  --invalidate, -i       : invalidates pact caches (setup.ini, etc.)"
+  echo "  --invalidate, -i       : invalidate pact caches ($SETUP_FILE, etc.)"
   echo "  --force, -f : force the execution"
   echo "  --help"
   echo "  --version"
 }
-
-
 
 function version()
 {
@@ -62,20 +73,18 @@ function version()
 
 function findworkspace()
 {
-  # default working directory and mirror
-
-    mirror=$PACT_REPO
-    if [[ -z $mirror ]]; then
-        echo "WARNINIG! ~/.pact/pact.repo does not contains $PACT_REPO mirror address. Using the default one!"
-        mirror=http://mirrors.kernel.org/sourceware/cygwin/
+    # default working directory and mirror
+    if [[ -z $MIRROR ]]; then
+        echo "WARNINIG! ~/.pact/pact.repo does not contains 'PACT_REPO' mirror address. Using the default one!"
+        MIRROR=$DEFAULT_MIRROR
     fi
     cache=/setup
 
     # work wherever setup worked last, if possible
-    mirrordir="$(echo "$mirror" | sed -e "s/:/%3a/g" -e "s:/:%2f:g")"
+    mirrordir="$(echo "$MIRROR" | sed -e "s/:/%3a/g" -e "s:/:%2f:g")"
 
     echo "Working directory is $cache"
-    echo "Mirror is $mirror"
+    echo "Mirror is $MIRROR"
     mkdir -p "$cache/$mirrordir"
     cd "$cache/$mirrordir" || return
 }
@@ -83,101 +92,109 @@ function findworkspace()
 
 function getsetup()
 {
+
+    # if no script indicated; do nothing and return successfully
+    # should always be associated with pact calling itself
+    if [ "$NOSCRIPTS" -gt 0 ]; then
+        return 0
+    fi
+
     currdir="$(pwd)"
-    if test "$noscripts" == "0"
-    then
-        if test "$invalidate" == "0" &&
-                [ -s "$currdir/setup.ini" ] &&
-                [ -s "$currdir/setup.ini-save" ] &&
-                [ "$(find "$currdir" -mtime 0 -type f -regex '.*setup.ini-save' 2>/dev/null)" ] &&
-                cmp -s "$currdir/setup.ini" "$currdir/setup.ini-save" ; then
-            echo "setup.ini taken from the cache"
-        else
-            touch setup.ini
-            mv setup.ini setup.ini-save
-            wget --user-agent="$USER_AGENT" -N "$mirror/$CYGWIN_VERSION/setup.bz2"
-            if test -e setup.bz2 && test $? -eq 0
-            then
+    if [ "$INVALIDATE" -eq 0 ] &&
+            [ -s "$currdir/$SETUP_FILE" ] &&
+            [ -s "$currdir/${SETUP_FILE}-save" ] &&
+            [ "$(find "$currdir" -mtime 0 -type f -regex ".*${SETUP_FILE}-save" 2>/dev/null)" ] &&
+            cmp -s "$currdir/$SETUP_FILE" "$currdir/${SETUP_FILE}-save" ; then
+
+        echo "$SETUP_FILE taken from the cache"
+
+    else
+        # make sure there is always a setup file
+        touch "$SETUP_FILE"
+        # create backup existing file
+        mv "$SETUP_FILE" "${SETUP_FILE}-save"
+
+        if wget --user-agent="$USER_AGENT" -N "$MIRROR/$CYGWIN_VERSION/setup.bz2"; then
+            if [ -e setup.bz2 ]; then
                 bunzip2 setup.bz2
-                mv setup setup.ini
-                echo "Updated setup.ini"
-            else
-                wget --user-agent="$USER_AGENT" -N "$mirror/$CYGWIN_VERSION/setup.ini"
-                if test -e setup.ini && test $? -eq 0
-                then
-                    echo "Updated setup.ini"
-                else
-                    mv setup.ini-save setup.ini
-                    echo "Error updating setup.ini, reverting"
-                fi
+                mv setup "$SETUP_FILE"
+                echo "Updated $SETUP_FILE"
+                return 0
             fi
         fi
+
+        if wget --user-agent="$USER_AGENT" -N "$MIRROR/$CYGWIN_VERSION/$SETUP_FILE"; then
+            if [ -e "$SETUP_FILE" ]; then
+                echo "Updated $SETUP_FILE"
+                return 0
+            fi
+        fi
+
+        # restore previous version if unable to retrieve new one
+        mv "${SETUP_FILE}-save" "$SETUP_FILE"
+        echo "Error updating $SETUP_FILE, reverting"
+
     fi
 }
 
-
-function checkpackages()
+function checkCygwin()
 {
-  if test "-$packages-" = "--"
-  then
-    echo Nothing to do, exiting
-    exit 0
-  fi
-}
 
-# process options
-noscripts=0
-invalidate=0
-file=""
-command=""
-packages=""
-force=0
+    # if no script indicated; do nothing and return successfully
+    # should always be associated with pact calling itself
+    if [ "$NOSCRIPTS" -gt 0 ]; then
+        return 0
+    fi
 
-function checkCygwin() {
-    if test "$noscripts" == "0"
-    then
-        # Check if the underlying Cygwin distribution is up to date
-        local newest_cygwin_version
-        newest_cygwin_version=$( get_newest_cygwin_version )
-        if [[ -z "$newest_cygwin_version" ]]; then
-            echo -e "[WARNING] Could not check the Cygwin distribution version. Installed packages may not work!"
-            return
-        else
-            local newest_cygwin_version_number
-            newest_cygwin_version_number=$( get_version_as_number "$newest_cygwin_version" )
-            local current_cygwin_version
-            current_cygwin_version=$( get_current_cygwin_version )
-            local current_cygwin_version_number
-            current_cygwin_version_number=$( get_version_as_number "$current_cygwin_version" )
-            if [[ $newest_cygwin_version_number -gt $current_cygwin_version_number ]]; then
-                if [[ force -eq 1 ]]; then
-                    echo -e "CRITICAL: The underlying Cygwin version is outdated! Force option enabled - continuing!"
-                else
-                    echo -e "-------------------------------------------------------------------------------"
-                    echo -e "CRITICAL: The underlying Cygwin version is outdated!"
-                    echo -e "It's forbidden to install new packages as they may fail to work."
-                    echo -e "Execute 'babun update' and follow the instructions to update Cygwin."
-                    echo -e "If you know what you are doing add '--force' flag to proceed."
-                    echo -e "-------------------------------------------------------------------------------"
-                    exit 1
-                fi
+    # Check if the underlying Cygwin distribution is up to date
+    local newest_cygwin_version
+    newest_cygwin_version=$( get_newest_cygwin_version )
+    if [[ -z "$newest_cygwin_version" ]]; then
+        echo "[WARNING] Could not check the Cygwin distribution version. Installed packages may not work!"
+        return
+    else
+        local newest_cygwin_version_number
+        newest_cygwin_version_number=$( get_version_as_number "$newest_cygwin_version" )
+        local current_cygwin_version
+        current_cygwin_version=$( get_current_cygwin_version )
+        local current_cygwin_version_number
+        current_cygwin_version_number=$( get_version_as_number "$current_cygwin_version" )
+
+        if [[ $newest_cygwin_version_number -gt $current_cygwin_version_number ]]; then
+            if [[ $FORCE -eq 1 ]]; then
+                echo "CRITICAL: The underlying Cygwin version is outdated! Force option enabled - continuing!"
+            else
+                echo "-------------------------------------------------------------------------------"
+                echo "CRITICAL: The underlying Cygwin version is outdated!"
+                echo "It's forbidden to install new packages as they may fail to work."
+                echo "Execute 'babun update' and follow the instructions to update Cygwin."
+                echo "If you know what you are doing add '--force' flag to proceed."
+                echo "-------------------------------------------------------------------------------"
+                exit 1
             fi
         fi
     fi
+}
+
+function installed()
+{
+    local pkg="$1"
+    local found
+    found=$(grep -o "^$pkg " "$INSTALLED_DB" | wc -l)
+    echo "$found"
 }
 
 function installPkg()
 {
 
-    for pkg in $packages
+    for pkg in "$@"
     do
 
-        already=$(grep -c "^$pkg " /etc/setup/installed.db)
-        if test "$already" -ge 1
-        then
+        if [ "$(installed "$pkg")" -gt 0 ]; then
             echo "Package $pkg is already installed, skipping"
             continue
         fi
+
         echo ""
         echo "Installing $pkg"
 
@@ -186,31 +203,28 @@ function installPkg()
         mkdir -p "release/$pkg"
         awk -v package="$pkg" \
           'BEGIN{RS="\n\n@ "; FS="\n"} {if ($1 == package) {desc = $0; px++}} END {if (px == 1 && desc != "") print desc; else print "Package not found"}' \
-          setup.ini > "release/$pkg/desc"
+          "$SETUP_FILE" > "release/$pkg/desc"
 
         desc=$(cat "release/$pkg/desc")
-        if test "-$desc-" = "-Package not found-"
-        then
+        if [[ "$desc" == "Package not found" ]]; then
             echo "Package $pkg not found or ambiguous name, exiting"
             rm -r "release/$pkg"
             exit 1
         fi
-        echo Found package "$pkg"
-
-        # download and unpack the bz2 file
+        echo "Found package $pkg"
 
         # pick the latest version, which comes first
         install=$(awk '/^install: / { print $2; exit }' "release/$pkg/desc")
-
-        if test "-$install-" = "--"
+        if [[ -z "$install" ]]
         then
-            echo "Could not find \"install\" in package description: obsolete package?"
+            echo "Could not find \"$install\" in package description: obsolete package?"
             exit 1
         fi
 
+        # download and unpack the bz2 file
         file=$(basename "$install")
         cd "release/$pkg" || return
-        wget --user-agent="$USER_AGENT" -nc "$mirror/$install"
+        wget --user-agent="$USER_AGENT" -nc "$MIRROR/$install"
 
         # check the verification hash (md5 or sha512)
         digest=$(awk '/^install: / { print $4; exit }' "$desc")
@@ -229,21 +243,21 @@ function installPkg()
         echo "Unpacking..."
         # determine file type
         if [ "${file##*.}" == "xz" ]; then
-            tar xvJf -C / "$file" > "/etc/setup/$pkg.lst"
+            tar xvJf -C / "$file" > "$SETUP_DIR/$pkg.lst"
         else
-            tar xvjf -C / "$file" > "/etc/setup/$pkg.lst"
+            tar xvjf -C / "$file" > "$SETUP_DIR/$pkg.lst"
         fi
-        gzip -f "/etc/setup/$pkg.lst"
+        gzip -f "$SETUP_DIR/$pkg.lst"
         cd ../.. || return
 
         # update the package database
 
         awk -v pkg="$pkg" -v bz="$file" \
           '{if (ins != 1 && pkg < $1) {print pkg " " bz " 0"; ins=1}; print $0} END{if (ins != 1) print pkg " " bz " 0"}' \
-          /etc/setup/installed.db > /tmp/awk.$$
+          "$INSTALLED_DB" > /tmp/awk.$$
 
-        mv /etc/setup/installed.db /etc/setup/installed.db-save
-        mv /tmp/awk.$$ /etc/setup/installed.db
+        mv "$INSTALLED_DB" "${INSTALLED_DB}-save"
+        mv /tmp/awk.$$ "$INSTALLED_DB"
 
         # recursively install required packages
 
@@ -252,32 +266,30 @@ function installPkg()
         requires=$(awk -f /tmp/awk.$$ "release/$pkg/desc")
 
         warn=0
-        if ! test "-$requires-" = "--"
+        if [[ ! -z "$requires" ]]
         then
             echo "Package $pkg requires the following packages, installing:"
             echo "$requires"
+
             for package in $requires
             do
-                already=$(grep -c "^$package " /etc/setup/installed.db)
-                if test "$already" -ge 1
-                then
+                if [ "$(installed "$package")" -gt 0 ]; then
                     echo "Package $package is already installed, skipping"
                     continue
                 fi
-                pact --noscripts install "$package"
-                if ! test $? = 0 ; then warn=1; fi
+
+                if ! pact --noscripts install "$package"; then
+                    warn=1
+                fi
             done
         fi
 
-        if ! test $warn = 0
-        then
+        if [ "$warn" -ne 0 ]; then
             echo "Warning: some required packages did not install, continuing"
         fi
 
-        # run all postinstall scripts
-
-        if ! test $noscripts -eq 1
-        then
+        if [ "$NOSCRIPTS" -eq 0 ]; then
+            # run all postinstall scripts
             mapfile -t pscripts < <(find /etc/postinstall/ -name '*.sh')
             for script in "${pscripts[@]}"
             do
@@ -295,222 +307,223 @@ function installPkg()
 function removePkg()
 {
 
-    for pkg in $packages
+    for pkg in "$@"
     do
 
-        already=$(grep -c "^$pkg " /etc/setup/installed.db)
-        if test "$already" = 0
-        then
+        if [ "$(installed "$pkg")" -eq 0 ]; then
             echo "Package $pkg is not installed, skipping"
             continue
         fi
 
-        dontremove="cygwin coreutils gawk bzip2 tar wget bash"
-        for req in $dontremove
-        do
-            if test "-$pkg-" = "-$req-"
-            then
+        # check the blacklist of packages that are not allowed to
+        # be removed to avoid making babun non-functional
+        case "$pkg" in
+            bash | bzip2 | coreutils | cygwin | gawk | tar | wget)
                 echo "pact cannot remove package $pkg, exiting"
                 exit 1
-            fi
-        done
+        esac
 
-        if ! test -e "/etc/setup/$pkg.lst.gz"
-        then
+        if [ ! -e "$SETUP_DIR/$pkg.lst.gz" ]; then
             echo "Package manifest missing, cannot remove $pkg.  Exiting"
             exit 1
         fi
         echo "Removing $pkg"
 
         # run preremove scripts
-
-        if test -e "/etc/preremove/$pkg.sh"
-        then
+        if [ -e "/etc/preremove/$pkg.sh" ]; then
             "/etc/preremove/$pkg.sh"
             rm "/etc/preremove/$pkg.sh"
         fi
 
-        gzip -d "/etc/setup/$pkg.lst.gz" | awk '/[^\/]$/ {print "rm -f \"/" $0 "\""}' | sh
-        rm "/etc/setup/$pkg.lst.gz"
-        rm -f /etc/postinstall/$pkg.sh.done
-        awk -v pkg="$pkg" '{if (pkg != $1) print $0}' /etc/setup/installed.db > /tmp/awk.$$
-        mv /etc/setup/installed.db /etc/setup/installed.db-save
-        mv /tmp/awk.$$ /etc/setup/installed.db
+        gzip -d "$SETUP_DIR/$pkg.lst.gz" | awk '/[^\/]$/ {print "rm -f \"/" $0 "\""}' | sh
+        rm "$SETUP_DIR/$pkg.lst.gz"
+        rm -f "/etc/postinstall/$pkg.sh.done"
+
+        awk -v pkg="$pkg" '{if (pkg != $1) print $0}' "$INSTALLED_DB" > /tmp/awk.$$
+        mv "$INSTALLED_DB" "${INSTALLED_DB}-save"
+        mv /tmp/awk.$$ "$INSTALLED_DB"
+
         echo "Package $pkg removed"
 
     done
 }
 
-while test $# -gt 0
-do
-  case "$1" in
+function describe()
+{
+    for arg in "$@"
+    do
+        echo ""
+        awk -v query="$arg" \
+            'BEGIN{RS="\n\n@ "; FS="\n"; ORS="\n"} {if ($1 ~ query) {print $0 "\n"}}' "$SETUP_FILE"
+    done
+    exit 0
+}
 
-    --mirror|-m)
-      echo "$2" > /etc/setup/last-mirror
-      PACT_REPO="$2"
-      echo "Mirror manually set to $PACT_REPO"
-      shift ; shift
-    ;;
+function search()
+{
+    for arg in "$@"
+    do
+        echo ""
+        echo "Searching for installed packages matching $arg:"
+        awk '/[^ ]+ [^ ]+ 0/ {if ($1 ~ query) print $1}' query="$arg" "$INSTALLED_DB"
+        echo ""
+        echo "Searching for installable packages matching $arg:"
+        awk -v query="$arg" \
+            'BEGIN{RS="\n\n@ "; FS="\n"; ORS="\n"} {if ($1 ~ query) {print $1}}' "$SETUP_FILE"
+    done
+    exit 0
+}
 
-    --noscripts)
-      noscripts=1
-      shift
-    ;;
+function packageof()
+{
+    for arg in "$@"
+    do
+        key=$(which "$arg" 2>/dev/null | sed "s:^/::")
+        [[ -z "$key" ]] && key="$arg"
 
-    --force|-f)
-      force=1
-      shift
-    ;;
+        mapfile -t manifests < <(find "$SETUP_DIR" -type f -name '*.lst.gz')
+        for manifest in "${manifests[@]}"
+        do
+            found=$(gzip -d "$manifest" | grep -o "$key" | wc -l)
+            if [ "$found" -gt 0 ]; then
+                package=$(echo "$manifest" | sed -e "s:$SETUP_DIR/::" -e "s/.lst.gz//")
+                echo "Found $key in the package $package"
+            fi
+        done
+    done
+    exit 0
+}
 
-    --invalidate|-i)
-      invalidate=1
-      shift
-    ;;
-
-    --help)
-      usage
-      exit 0
-    ;;
-
-    --version)
-      version
-      exit 0
-    ;;
-
-
-    invalidate|update|show|find|describe|packageof|install|remove)
-      if test "-$command-" = "--"
-      then
-        command=$1
-      else
-        packages="$packages $1"
-      fi
-      shift
-
-    ;;
-
-    *)
-      packages="$packages $1"
-      shift
-
-    ;;
-
-  esac
-done
-
-test $noscripts -eq 0 && check_only_one_running "pact"
-
-case "$command" in
-
-  invalidate)
-
-  invalidate=1
-    findworkspace
-    getsetup
-
-  ;;
-
-  show)
-
+function show()
+{
     echo 1>&2 "The following packages are installed:"
-    awk '/[^ ]+ [^ ]+ 0/ {print $1}' /etc/setup/installed.db
+    awk '/[^ ]+ [^ ]+ 0/ {print $1}' "$INSTALLED_DB"
+    exit 0
+}
 
-  ;;
+function check_inprogress()
+{
+    [[ $NOSCRIPTS -eq 0 ]] && check_only_one_running "pact"
+}
 
-
-  find)
-
-    checkpackages
-    findworkspace
-    getsetup
-
-    for pkg in $packages
-    do
-      echo ""
-      echo "Searching for installed packages matching $pkg:"
-      awk '/[^ ]+ [^ ]+ 0/ {if ($1 ~ query) print $1}' query="$pkg" /etc/setup/installed.db
-      echo ""
-      echo "Searching for installable packages matching $pkg:"
-      awk -v query="$pkg" \
-        'BEGIN{RS="\n\n@ "; FS="\n"; ORS="\n"} {if ($1 ~ query) {print $1}}' setup.ini
-    done
-
-  ;;
+function checkpackages()
+{
+    case $# in
+        0)
+            echo "Nothing to do, exiting"
+            exit 0
+            ;;
+    esac
+}
 
 
-  describe)
-
-    checkpackages
-    findworkspace
-    getsetup
-    for pkg in $packages
-    do
-      echo ""
-      awk -v query="$pkg" \
-        'BEGIN{RS="\n\n@ "; FS="\n"; ORS="\n"} {if ($1 ~ query) {print $0 "\n"}}' setup.ini
-    done
-
-  ;;
-
-
-  packageof)
-
-    checkpackages
-    for pkg in $packages
-    do
-      key=$(which "$pkg" 2>/dev/null | sed "s:^/::")
-      if test "-$key-" = "--"
-      then
-        key="$pkg"
-      fi
-      mapfile -t manifests < <(find /etc/setup -type f -name '*.lst.gz')
-      for manifest in "${manifests[@]}"
-      do
-        found=$(gzip -d "$manifest" | grep -o "$key" | wc -l)
-        if test "$found" -gt 0
-        then
-          package=$(echo "$manifest" | sed -e "s:/etc/setup/::" -e "s/.lst.gz//")
-          echo "Found $key in the package $package"
-        fi
-      done
-    done
-
-  ;;
-
-
-  install)
-
-    checkCygwin
-    checkpackages
-    findworkspace
-    getsetup
-    installPkg
-
-  ;;
-
-
-  update)
-
-    checkCygwin
-    removePkg
-    checkpackages
-    findworkspace
-    getsetup
-    installPkg
-
-  ;;
-
-  remove)
-
-    checkpackages
-    removePkg
-
-  ;;
-
-  *)
-
-    usage
-
-  ;;
-
+# Main processing of inputs
+case $# in
+    0) usage ; exit 0 ;;
 esac
+
+while [ $# -gt 0 ]; do
+
+    case "$1" in
+
+        --help)
+            usage
+            exit 0
+            ;;
+
+        --version)
+            version
+            exit 0
+            ;;
+
+        --mirror|-m)
+            # user chose to override configurations for this run
+            MIRROR="$2"
+            echo "$MIRROR" > "$SETUP_DIR/last-mirror"
+            echo "Mirror manually set to $MIRROR"
+            shift ; shift
+            ;;
+
+        --noscripts)
+            NOSCRIPTS=1
+            shift
+            ;;
+
+        --force|-f)
+            FORCE=1
+            shift
+            ;;
+
+        --invalidate|-i)
+            INVALIDATE=1
+            shift
+            ;;
+
+        invalidate)
+            shift
+            check_inprogress
+            INVALIDATE=1
+            findworkspace
+            getsetup
+            exit 0
+            ;;
+
+        show)
+            shift
+            show
+            ;;
+
+        packageof)
+            shift
+            packageof "$@"
+            ;;
+
+        describe)
+            shift
+            check_inprogress
+            findworkspace
+            getsetup
+            describe "$@"
+            ;;
+
+        find)
+            shift
+            check_inprogress
+            findworkspace
+            getsetup
+            search "$@"
+            ;;
+
+        install)
+            shift
+            check_inprogress
+            checkpackages "$@"
+            checkCygwin
+            findworkspace
+            getsetup
+            installPkg "$@"
+            exit 0
+            ;;
+
+        remove)
+            shift
+            check_inprogress
+            checkpackages "$@"
+            removePkg "$@"
+            exit 0
+            ;;
+
+        update)
+            shift
+            check_inprogress
+            checkpackages "$@"
+            checkCygwin
+            removePkg "$@"
+            findworkspace
+            getsetup
+            installPkg "$@"
+            exit 0
+            ;;
+
+    esac
+done
