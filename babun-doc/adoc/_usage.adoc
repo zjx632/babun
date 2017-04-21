@@ -25,7 +25,7 @@ Do you like it? Follow babun on Twitter https://twitter.com/babunshell[@babunshe
 
 === Cygwin
 
-The core of Babun consists of a pre-configured Cygwin. Cygwin is a great tool, but there's a lot of quirks and tricks that makes you lose a lot of time to make it actually 'usable'. Not only does babun solve most of these problems, but also contains a lot of vital packages, so that you can be productive from the very first minute. 
+The core of Babun consists of a pre-configured Cygwin. Cygwin is a great tool, but there's a lot of quirks and tricks that makes you lose a lot of time to make it actually 'usable'. Not only does babun solve most of these problems, but also contains a lot of vital packages, so that you can be productive from the very first minute.
 
 === Package manager
 
@@ -38,7 +38,7 @@ Babun's shell is tweaked in order to provide the best possible user-experience. 
 * syntax highlighting
 * UNIX tools
 * software development tools
-* git-aware prompt 
+* git-aware prompt
 * custom scripts and aliases
 * and much more!
 
@@ -120,7 +120,7 @@ gitalias['alias.unstage']='reset HEAD --'
 === Installing and removing packages
 Babun is shipped with `pact` - a Linux like package manager. It uses the cygwin repository for downloading packages:
 ----
-{ ~ } » pact install arj                                                                     ~ 
+{ ~ } » pact install arj                                                                     ~
 Working directory is /setup
 Mirror is http://mirrors.kernel.org/sourceware/cygwin/
 setup.ini taken from the cache
@@ -144,7 +144,7 @@ Package arj installed
 
 Here's the list of all pact's features:
 ----
-{ ~ }  » pact --help                                                                            
+{ ~ }  » pact --help
 pact: Installs and removes Cygwin packages.
 
 Usage:
@@ -169,13 +169,13 @@ The zsh (with .oh-my-zsh) is the default babun's shell.
 
 Executing the following command will output your default shell:
 ----
-{ ~ } » babun shell                                                                          ~ 
+{ ~ } » babun shell                                                                          ~
 /bin/zsh
 ----
 
 In order to change your default shell execute:
 ----
-{ ~ } » babun shell /bin/bash                                                                ~ 
+{ ~ } » babun shell /bin/bash                                                                ~
 /bin/zsh
 /bin/bash
 ----
@@ -208,7 +208,7 @@ It will check if there are problems with the speed of the git prompt, if there's
 
 The command will output hints if problems occur:
 ----
-{ ~ } » babun check                                                                          ~ 
+{ ~ } » babun check                                                                          ~
 Executing babun check
 Prompt speed      [SLOW]
 Hint: your prompt is very slow. Check the installed 'BLODA' software.
@@ -255,6 +255,6 @@ To update babun to the newest version execute:
 ----
 babun update
 ----
-Please note that your local configuration files will not be overwritten. 
+Please note that your local configuration files will not be overwritten.
 
 The 'babun update' command will also update the underlying cygwin version if never version is available. In such case babun will download the new cygwin installer, close itself and start the cygwin installation process. Once cygwin installation is completed babun will restart.

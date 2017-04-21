@@ -6,7 +6,7 @@
 
 * build master on jenkins to see if the build is passing
 
-* promote master to candidate branch 
+* promote master to candidate branch
 
 ----
 git checkout candidate
@@ -20,7 +20,7 @@ git push
 ** test all new features
 ** smoke test existing features
 
-* download candidate zip with previous version from jenkins, install and execute `babun update` 
+* download candidate zip with previous version from jenkins, install and execute `babun update`
 ** test all new features
 ** smoke test existing features
 
