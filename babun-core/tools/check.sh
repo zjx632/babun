@@ -71,10 +71,10 @@ function exec_check_unfinished_update {
     local source_version
     source_version=$( get_version_as_number get_current_source_version )
     if ! [[ $installed_version -eq $source_version ]]; then
-        echo -e "Source consistent [FAILED]"
-        echo -e "Hint: babun is in INCONSISTENT state! Run babun update to finish the update process!"
+        echo "Source consistent [FAILED]"
+        echo "Hint: babun is in INCONSISTENT state! Run babun update to finish the update process!"
     else
-        echo -e "Source consistent [OK]"
+        echo "Source consistent [OK]"
     fi
 }
 
@@ -89,20 +89,20 @@ function exec_check_prompt {
     fi
 
     if [[ $time_taken -lt 500 ]]; then
-        echo -e "Prompt speed      [OK]"
+        echo "Prompt speed      [OK]"
     else
-        echo -e "Prompt speed      [SLOW]"
-        echo -e "Hint: your prompt is very slow. Check the installed 'BLODA' software."
+        echo "Prompt speed      [SLOW]"
+        echo "Hint: your prompt is very slow. Check the installed 'BLODA' software."
     fi
 }
 
 function exec_check_permissions {
     permcheck=$( chmod 777 /etc/passwd /usr/local/bin/babun 2> /dev/null || echo "FAILED" )
     if [[  $permcheck == "FAILED" ]]; then
-        echo -e "File permissions  [FAILED]"
-        echo -e "Hint: Have you installed babun as admin and run it from a non-admin account?"
+        echo "File permissions  [FAILED]"
+        echo "Hint: Have you installed babun as admin and run it from a non-admin account?"
     else
-        echo -e "File permissions  [OK]"
+        echo "File permissions  [OK]"
     fi
 }
 
@@ -110,7 +110,7 @@ function exec_check_cygwin {
     local newest_cygwin_version
     newest_cygwin_version=$( get_newest_cygwin_version )
     if [[ -z "$newest_cygwin_version" ]]; then
-        echo -e "Cygwin check      [FAILED]"
+        echo "Cygwin check      [FAILED]"
         return
     else
 
@@ -121,10 +121,10 @@ function exec_check_cygwin {
         local current_cygwin_version_number
         current_cygwin_version_number=$( get_version_as_number "$current_cygwin_version" )
         if [[ $newest_cygwin_version_number -gt $current_cygwin_version_number ]]; then
-            echo -e "Cygwin check      [OUTDATED]"
-            echo -e "Hint: the underlying Cygwin kernel is outdated. Execute 'babun update'"
+            echo "Cygwin check      [OUTDATED]"
+            echo "Hint: the underlying Cygwin kernel is outdated. Execute 'babun update'"
         else
-            echo -e "Cygwin check      [OK]"
+            echo "Cygwin check      [OK]"
         fi
     fi
 }
@@ -137,12 +137,12 @@ function babun_check {
     local newest_version
     newest_version=$( get_newest_version )
     if [[ -z "$newest_version" ]]; then
-        echo -e "Connection check  [FAILED]"
-        echo -e "Update check      [FAILED]"
-        echo -e "Hint: adjust proxy settings in ~/.babunrc and execute 'source ~/.babunrc'"
+        echo "Connection check  [FAILED]"
+        echo "Update check      [FAILED]"
+        echo "Hint: adjust proxy settings in ~/.babunrc and execute 'source ~/.babunrc'"
         return
     else
-        echo -e "Connection check  [OK]"
+        echo "Connection check  [OK]"
     fi
 
     local current_version
@@ -152,10 +152,10 @@ function babun_check {
     local newest_version_number
     newest_version_number=$( get_version_as_number "$newest_version" )
     if [[ $newest_version_number -gt $current_version_number ]]; then
-        echo -e "Update check      [OUTDATED]"
-        echo -e "Hint: your babun is outdated. Execute 'babun update'"
+        echo "Update check      [OUTDATED]"
+        echo "Hint: your babun is outdated. Execute 'babun update'"
     else
-        echo -e "Update check      [OK]"
+        echo "Update check      [OK]"
     fi
 
     exec_check_cygwin
