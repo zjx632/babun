@@ -21,5 +21,5 @@ fi
 
 if [ ! -f "/bin/vi" ]
 then
- ln -s /usr/bin/vim /bin/vi
+    ln -s /usr/bin/vim /bin/vi
 fi

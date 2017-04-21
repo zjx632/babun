@@ -15,51 +15,51 @@ check_only_one_running "babun"
 
 function usage()
 {
-  echo babun: Manages the instance of babun.
-  echo ""
-  echo "Usage:"
-  echo "  \"babun update\" to fetch the newest version of babun"
-  echo "  \"babun check\" to check if the installation is correct"
-  echo "  \"babun shell\" to display the name of the user's default shell (may not be the currently used shell)"
-  echo "  \"babun shell <new_shell>\" to set the user's default shell to new_shell"
-  echo "  \"babun install\" to (re)install babun to the current user's home folder"
-  echo "  \"babun login\" to login to the user's default shell"
-  echo "  \"babun <plugin_name> cmd\" to execute cmd provided by the given plugin"
-  echo "Options:"
-  echo "  --help"
-  echo "  --version"
-  echo "  --welcome"
+    echo "babun: Manages the instance of babun."
+    echo ""
+    echo "Usage:"
+    echo "  \"babun update\" to fetch the newest version of babun"
+    echo "  \"babun check\" to check if the installation is correct"
+    echo "  \"babun shell\" to display the name of the user's default shell (may not be the currently used shell)"
+    echo "  \"babun shell <new_shell>\" to set the user's default shell to new_shell"
+    echo "  \"babun install\" to (re)install babun to the current user's home folder"
+    echo "  \"babun login\" to login to the user's default shell"
+    echo "  \"babun <plugin_name> cmd\" to execute cmd provided by the given plugin"
+    echo "Options:"
+    echo "  --help"
+    echo "  --version"
+    echo "  --welcome"
 }
 
 function version()
 {
-  echo "babun version $(cat $babun/installed/babun 2> /dev/null || echo '1.0.1 ???')"
-  echo "Created and maintained by Tom Bujok (@tombujok) and Lukasz Pielak (@lukaszpielak)."
-  echo "Copyright (c) 2014-2016."
+    echo "babun version $(cat $babun/installed/babun 2> /dev/null || echo '1.0.1 ???')"
+    echo "Created and maintained by Tom Bujok (@tombujok) and Lukasz Pielak (@lukaszpielak)."
+    echo "Copyright (c) 2014-2016."
 }
 
 function welcome()
 {
-  echo -e "Welcome to babun - the Windows shell you will love!"
-  echo -e "You have got a lot of things under the hood here!"
-  echo -e ""
-  echo -e "   pact -> a package manager that handles installation of babun packages"
-  echo -e "      pact install tar -> will install tar package on your system"
-  echo -e "      pact remove tar -> will remove tar package from your system"
-  echo -e ""
-  echo -e "   babun -> a script that manages babun and enables auto-update"
-  echo -e "      babun help -> will display babun script usage"
-  echo -e "      babun check -> will check the configuration (proxy, connection, etc)"
-  echo -e "      babun update -> will update babun to the newest version"
-  echo -e "      babun --welcome -> will display this message again"
-  echo -e ""
-  echo -e "There are a couple of plugins installed by default: oh-my-zsh, pact, cacert, etc."
-  echo -e "There are also a lot of dev tools such as git, svn, unix utils, etc"
-  echo -e "If you would like to contribute, code up a plugin or report an issue just"
-  echo -e "go to GitHub: https://github.com/babun/babun"
-  echo -e ""
-  echo -e "If you like the project, star it on GitHub and follow us on twitter!"
-  echo -e "This project is created and maintained by Tom Bujok (@tombujok) and Lukasz Pielak (@lukaszpielak)."
+    echo "Welcome to babun - the Windows shell you will love!"
+    echo "You have got a lot of things under the hood here!"
+    echo ""
+    echo "   pact -> a package manager that handles installation of babun packages"
+    echo "      pact install tar -> will install tar package on your system"
+    echo "      pact remove tar -> will remove tar package from your system"
+    echo ""
+    echo "   babun -> a script that manages babun and enables auto-update"
+    echo "      babun help -> will display babun script usage"
+    echo "      babun check -> will check the configuration (proxy, connection, etc)"
+    echo "      babun update -> will update babun to the newest version"
+    echo "      babun --welcome -> will display this message again"
+    echo ""
+    echo "There are a couple of plugins installed by default: oh-my-zsh, pact, cacert, etc."
+    echo "There are also a lot of dev tools such as git, svn, unix utils, etc"
+    echo "If you would like to contribute, code up a plugin or report an issue just"
+    echo "go to GitHub: https://github.com/babun/babun"
+    echo ""
+    echo "If you like the project, star it on GitHub and follow us on twitter!"
+    echo "This project is created and maintained by Tom Bujok (@tombujok) and Lukasz Pielak (@lukaszpielak)."
 }
 
 function update()
@@ -71,8 +71,8 @@ function update()
 
     permcheck=$( chmod 777 /usr/local/bin/babun 2> /dev/null || echo "FAILED" )
     if [[  $permcheck == "FAILED" ]]; then
-        echo -e "ERROR: You don't have write permission to / filesystem. Aborting!"
-        echo -e "Have you installed babun as admin and run it from a non-admin account? Retry as admin."
+        echo "ERROR: You don't have write permission to / filesystem. Aborting!"
+        echo "Have you installed babun as admin and run it from a non-admin account? Retry as admin."
         exit 1
     fi
 

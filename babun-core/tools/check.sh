@@ -71,10 +71,10 @@ function exec_check_unfinished_update {
     local source_version
     source_version=$( get_version_as_number get_current_source_version )
     if ! [[ $installed_version -eq $source_version ]]; then
-            echo -e "Source consistent [FAILED]"
-            echo -e "Hint: babun is in INCONSISTENT state! Run babun update to finish the update process!"
+        echo -e "Source consistent [FAILED]"
+        echo -e "Hint: babun is in INCONSISTENT state! Run babun update to finish the update process!"
     else
-            echo -e "Source consistent [OK]"
+        echo -e "Source consistent [OK]"
     fi
 }
 

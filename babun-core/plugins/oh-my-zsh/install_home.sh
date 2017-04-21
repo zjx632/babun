@@ -14,8 +14,8 @@ src="$babun/home/oh-my-zsh"
 if [ ! -d "$homedir/.oh-my-zsh" ]; then
     git --git-dir="$src/.oh-my-zsh/.git" --work-tree="$src/.oh-my-zsh" reset --hard
     # installing oh-my-zsh
-    /bin/chmod 755 -R "$src/.oh-my-zsh"
-    /bin/cp -rf "$src/.oh-my-zsh" "$homedir/.oh-my-zsh"
+    chmod 755 -R "$src/.oh-my-zsh"
+    cp -rf "$src/.oh-my-zsh" "$homedir/.oh-my-zsh"
 
     # setting zsh as the default shell
     if grep -q "/bin/bash" "/etc/passwd"; then
@@ -25,7 +25,7 @@ fi
 
 
 if [ ! -f "$homedir/.zshrc" ]; then
-    /bin/cp "$babun/home/.zshrc" "$homedir/.zshrc"
+    cp "$babun/home/.zshrc" "$homedir/.zshrc"
 
     # fixing oh-my-zsh components
     zsh -c "source ~/.zshrc; rm -f \"$homedir/.zcompdump\"; compinit -u" &> /dev/null

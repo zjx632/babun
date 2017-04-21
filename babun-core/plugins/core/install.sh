@@ -9,20 +9,20 @@ src="$babun_source/babun-core/plugins/core/src"
 typeset -i installed_version
 installed_version=$(cat "$babun/installed/core" || echo "0")
 
-/bin/cp -rf $src/babun /usr/local/bin
+cp -rf $src/babun /usr/local/bin
 chmod 755 /usr/local/bin/babun
 
-/bin/cp -rf /usr/local/etc/babun.rc /usr/local/etc/babun.rc.old || echo ""
-/bin/cp -rf $src/babun.rc /usr/local/etc
+cp -rf /usr/local/etc/babun.rc /usr/local/etc/babun.rc.old || echo ""
+cp -rf $src/babun.rc /usr/local/etc
 source /usr/local/etc/babun.rc
 
-/bin/cp -rf $src/babun.bash /usr/local/etc
-/bin/cp -rf $src/babun.zsh /usr/local/etc
-/bin/cp -rf $src/babun.start /usr/local/etc
-/bin/cp -rf $src/babun.instance /usr/local/etc
+cp -rf $src/babun.bash /usr/local/etc
+cp -rf $src/babun.zsh /usr/local/etc
+cp -rf $src/babun.start /usr/local/etc
+cp -rf $src/babun.instance /usr/local/etc
 
 mkdir -p "$babun/home/core"
-/bin/cp -rf $src/.babunrc "$babun/home/core/.babunrc"
+cp -rf $src/.babunrc "$babun/home/core/.babunrc"
 
 
 profiles=("/etc/bash.bashrc")
@@ -73,33 +73,33 @@ if [[ "$installed_version" -le 1 ]]; then
 
     # fix permissions on cygdrive
     echo "Fixing /etc/fstab permissions on /cygdrive"
-    /bin/sed -e "s/binary,posix/binary,noacl,posix/" -i /etc/fstab
+    sed -e "s/binary,posix/binary,noacl,posix/" -i /etc/fstab
 
     # fix /etc/passwd in case the $HOME variable is set to the user's Windows HOME folder
     if [[ "$HOME" == /cygdrive* ]]; then
         echo "Fixing /etc/passwd for a Windows based home folder"
-        /bin/mkpasswd -l -p "$(/bin/cygpath -H)" > /etc/passwd
-        /bin/mkgroup -l -c > /etc/group
+        mkpasswd -l -c -p "$(cygpath -H)" > /etc/passwd
+        mkgroup -l -c > /etc/group
         #setting default shell back to /bin/zsh
-        /bin/sed -i 's/\/bin\/bash/\/bin\/zsh/' "/etc/passwd"
+        sed -i 's/\/bin\/bash/\/bin\/zsh/' "/etc/passwd"
     fi
 
     # fix permissions in /usr/local
     echo "Fixing permissions"
-    /bin/chmod 755 -R /usr/local
-    /bin/chmod u+rwx -R /etc
+    chmod 755 -R /usr/local
+    chmod u+rwx -R /etc
 
 
     # fix mintty problem in the babun.bat launcher (best effort)
     if [[ -f "$BABUN_HOME/babun.bat" ]]; then
         echo "Trying to fix babun.bat launcher"
-        /bin/sed -i "s/--size 100,35 -o Font='Lucida Console'//" "$BABUN_HOME/babun.bat"
+        sed -i "s/--size 100,35 -o Font='Lucida Console'//" "$BABUN_HOME/babun.bat"
     fi
 
 fi
 
 if [[ "$installed_version" -le 2 ]]; then
     #remove duplicate lines from /etc/zshrc (consequence of #249)
-    /bin/awk '!a[$0]++' /etc/zshrc > /etc/zshrc.fixed
-    /bin/mv /etc/zshrc.fixed /etc/zshrc
+    awk '!a[$0]++' /etc/zshrc > /etc/zshrc.fixed
+    mv /etc/zshrc.fixed /etc/zshrc
 fi
