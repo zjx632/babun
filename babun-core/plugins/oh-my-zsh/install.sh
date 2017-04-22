@@ -6,6 +6,10 @@ source "$babun_tools/script.sh"
 # shellcheck source=/usr/local/etc/babun/source/babun-core/tools/git.sh
 source "$babun_tools/git.sh"
 
+if [[ "$DISABLE_PLUGIN_OH_MY_ZSH" == "true" ]]; then
+    return 0
+fi
+
 src="$babun/external/oh-my-zsh"
 dest="$babun/home/oh-my-zsh/.oh-my-zsh"
 

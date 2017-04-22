@@ -67,7 +67,6 @@ for profile in "${profiles[@]}"; do
 done
 
 # COMPATIBILITY FIXES
-# INSTALLED_VERSION=1
 if [[ "$installed_version" -le 1 ]]; then
     echo "Compatibility fixes [core] version=[$installed_version]"
 
@@ -89,7 +88,6 @@ if [[ "$installed_version" -le 1 ]]; then
     chmod 755 -R /usr/local
     chmod u+rwx -R /etc
 
-
     # fix mintty problem in the babun.bat launcher (best effort)
     if [[ -f "$BABUN_HOME/babun.bat" ]]; then
         echo "Trying to fix babun.bat launcher"
@@ -99,7 +97,7 @@ if [[ "$installed_version" -le 1 ]]; then
 fi
 
 if [[ "$installed_version" -le 2 ]]; then
-    #remove duplicate lines from /etc/zshrc (consequence of #249)
+    # remove duplicate lines from /etc/zshrc (consequence of #249)
     awk '!a[$0]++' /etc/zshrc > /etc/zshrc.fixed
     mv /etc/zshrc.fixed /etc/zshrc
 fi

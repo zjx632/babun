@@ -38,6 +38,9 @@ function unset_reg_keys {
 
 }
 
+if [[ "$DISABLE_PLUGIN_SHELL_HERE" == "true" ]]; then
+    return 0
+fi
 
 if [ "$1" == "init" ]; then
     set_reg_keys

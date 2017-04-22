@@ -14,16 +14,16 @@ do
     fi
 done
 
-if ! [[ "$DISABLE_PLUGIN_CYGDRIVE" == "true" ]]; then
-
-    mapfile -t cdirs < <(find /cygdrive/ -maxdepth 1 -type d 2>/dev/null)
-    for cygdrive_dir in "${cdirs[@]}"
-    do
-        drive_name=$(basename "$cygdrive_dir")
-
-        if [[ "$drive_name" != "cygdrive" ]]; then
-            ln -s "$cygdrive_dir" "/$drive_name"
-        fi
-    done
-
+if [[ "$DISABLE_PLUGIN_CYGDRIVE" == "true" ]]; then
+    return 0
 fi
+
+mapfile -t cdirs < <(find /cygdrive/ -maxdepth 1 -type d 2>/dev/null)
+for cygdrive_dir in "${cdirs[@]}"
+do
+    drive_name=$(basename "$cygdrive_dir")
+
+    if [[ "$drive_name" != "cygdrive" ]]; then
+        ln -s "$cygdrive_dir" "/$drive_name"
+    fi
+done

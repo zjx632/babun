@@ -4,6 +4,10 @@ source "/usr/local/etc/babun.instance"
 # shellcheck source=/usr/local/etc/babun/source/babun-core/tools/script.sh
 source "$babun_tools/script.sh"
 
+if [[ "$DISABLE_PLUGIN_XSERVER" == "true" ]]; then
+    return 0
+fi
+
 src="$babun/home/xserver"
 
 # if XWinrc not installed
