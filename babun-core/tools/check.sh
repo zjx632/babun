@@ -58,7 +58,7 @@ function get_newest_cygwin_version_from_cygwin {
     # format the page such that the string being searched are on the same line
     tidy -f /dev/null -q -m -w 180 "$html"
     local ver
-    ver=$(grep "most recent version of the Cygwin DLL" "$html" | egrep -o "([0-9]{1,}\.)+[0-9]{1,}")
+    ver=$(grep "most recent version of the Cygwin DLL" "$html" | grep -E -o "([0-9]{1,}\.)+[0-9]{1,}")
     rm -f "$html"
     echo "$ver"
 }
