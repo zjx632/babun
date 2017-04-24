@@ -227,7 +227,7 @@ function installPkg()
         wget --user-agent="$USER_AGENT" -nc "${MIRROR%/}/$install"
 
         # check the verification hash (md5 or sha512)
-        digest=$(awk '/^install: / { print $4; exit }' "$desc")
+        digest=$(awk '/^install: / { print $4; exit }' desc)
         md5digactual=$(md5sum "$file" | awk '{print $1}')
         if ! [[ $digest == "$md5digactual" ]]
         then
