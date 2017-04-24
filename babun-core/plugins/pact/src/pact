@@ -228,25 +228,18 @@ function installPkg()
 
         # check the verification hash (md5 or sha512)
         digest=$(awk '/^install: / { print $4; exit }' desc)
-        md5digactual=$(md5sum "$file" | awk '{print $1}')
-        if [ "$digest" != "$md5digactual" ]
-        then
-            shadigactual=$(sha512sum "$file" | awk '{print $1}')
-            if [ "$digest" != "$shadigactual" ]
-            then
-                echo "Verification hash did not match, exiting"
-                rm "$file" # Remove the file with bad checksum
-                exit 1
-            fi
+        case ${#digest} in
+            32) check=md5sum ;;
+            128) check=sha512sum ;;
+        esac
+        if ! "$check" -c <<< "$digest $file"; then
+            echo "Verification hash did not match, exiting"
+            rm "$file" # Remove the file with bad checksum
+            exit 1
         fi
 
         echo "Unpacking [$file]..."
-        # determine file type
-        if [ "${file##*.}" == "xz" ]; then
-            tar -C / -xvJf "$file" > "$SETUP_DIR/$pkg.lst" || return 1
-        else
-            tar -C / -xvjf "$file" > "$SETUP_DIR/$pkg.lst" || return 1
-        fi
+        tar -C / -xv -f "$file" > "$SETUP_DIR/$pkg.lst" || return 1
         gzip -f "$SETUP_DIR/$pkg.lst"
         cd ../.. || return
 
@@ -260,10 +253,7 @@ function installPkg()
         mv /tmp/awk.$$ "$INSTALLED_DB"
 
         # recursively install required packages
-
-        # shellcheck disable=SC2016
-        echo '/^requires: / {s=gensub("(requires: )?([^ ]+) ?", "\\2 ", "g", $0); print s}' > /tmp/awk.$$
-        requires=$(awk --file=/tmp/awk.$$  "release/$pkg/desc")
+        requires=$(awk '$1=="requires", $0=$2' FS=': ' "release/$pkg/desc")
 
         warn=0
         if [[ ! -z "$requires" ]]
@@ -277,10 +267,7 @@ function installPkg()
                     echo "Package $package is already installed, skipping"
                     continue
                 fi
-
-                if ! pact --noscripts install "$package"; then
-                    warn=1
-                fi
+                pact --noscripts install "$package" || (( warn++ ))
             done
         fi
 
@@ -336,8 +323,7 @@ function removePkg()
         fi
 
         gzip -d "$SETUP_DIR/$pkg.lst.gz" | awk '/[^\/]$/ {print "rm -f \"/" $0 "\""}' | sh
-        rm "$SETUP_DIR/$pkg.lst"
-        rm -f "/etc/postinstall/$pkg.sh.done"
+        rm -f "$SETUP_DIR/$pkg.lst" "/etc/postinstall/$pkg.sh.done"
 
         awk -v pkg="$pkg" '{if (pkg != $1) print $0}' "$INSTALLED_DB" > /tmp/awk.$$
         mv "$INSTALLED_DB" "${INSTALLED_DB}-save"
