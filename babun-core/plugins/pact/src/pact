@@ -41,26 +41,31 @@ NOSCRIPTS=0
 INVALIDATE=0
 FORCE=0
 
+PROG=pact
+USAGE="\
+$PROG: Installs and removes Cygwin packages.
+
+Usage:
+    $PROG [OPTION] install <package names> to install given packages
+    $PROG [OPTION] remove <package names> to remove given packages
+    $PROG [OPTION] update <package names> to update given packages
+    $PROG [OPTION] show to show installed packages
+    $PROG [OPTION] find <patterns> to find packages matching patterns
+    $PROG [OPTION] describe <patterns> to describe packages matching patterns
+    $PROG packageof <commands or files> to locate parent packages
+    $PROG invalidate to invalidate $PROG caches ($SETUP_FILE, etc.)
+
+Options:
+    --mirror, -m <url> : set mirror
+    --invalidate, -i       : invalidate $PROG caches ($SETUP_FILE, etc.)
+    --force, -f : force the execution
+    --help
+    --version
+"
 
 function usage()
 {
-  echo "pact: Installs and removes Cygwin packages."
-  echo ""
-  echo "Usage:"
-  echo "  \"pact [OPTION] install <package names>\" to install given packages"
-  echo "  \"pact [OPTION] remove <package names>\" to remove given packages"
-  echo "  \"pact [OPTION] update <package names>\" to update given packages"
-  echo "  \"pact show\" to show installed packages"
-  echo "  \"pact [OPTION] find <patterns>\" to find packages matching patterns"
-  echo "  \"pact [OPTION] describe <patterns>\" to describe packages matching patterns"
-  echo "  \"pact packageof <commands or files>\" to locate parent packages"
-  echo "  \"pact invalidate\" to invalidate pact caches ($SETUP_FILE, etc.)"
-  echo "Options:"
-  echo "  --mirror, -m <url> : set mirror"
-  echo "  --invalidate, -i       : invalidate pact caches ($SETUP_FILE, etc.)"
-  echo "  --force, -f : force the execution"
-  echo "  --help"
-  echo "  --version"
+    echo "$USAGE"
 }
 
 function version()
