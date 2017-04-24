@@ -41,7 +41,36 @@ function get_current_cygwin_version {
     echo "$current_cygwin_version"
 }
 
+function get_newest_cygwin_version_from_cygwin {
+    if [[ -z $CHECK_TIMEOUT_IN_SECS ]]; then
+        CHECK_TIMEOUT_IN_SECS=4
+    fi
+
+    if [[ -z $(which tidy 2> /dev/null) ]]; then
+        echo ""
+        return
+    fi
+
+    local html=/tmp/cygwin.html
+
+    # download the front page from cygwin.com
+    curl --silent --insecure --user-agent "$USER_AGENT" --connect-timeout $CHECK_TIMEOUT_IN_SECS --location -o "$html" https://cygwin.com
+    # format the page such that the string being searched are on the same line
+    tidy -f /dev/null -q -m -w 180 "$html"
+    local ver
+    ver=$(grep "most recent version of the Cygwin DLL" "$html" | egrep -o "([0-9]{1,}\.)+[0-9]{1,}")
+    rm -f "$html"
+    echo "$ver"
+}
+
 function get_newest_cygwin_version {
+    local ver
+    ver=$( get_newest_cygwin_version_from_cygwin )
+    if [[ ! -z "$ver" ]]; then
+        echo "$ver"
+        return
+    fi
+
     if [[ -z $CHECK_TIMEOUT_IN_SECS ]]; then
         CHECK_TIMEOUT_IN_SECS=4
     fi

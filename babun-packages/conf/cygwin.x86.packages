@@ -96,6 +96,7 @@ shutdown
 subversion
 tar
 terminfo
+tidy
 time
 tree
 util-linux
