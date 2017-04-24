@@ -229,10 +229,10 @@ function installPkg()
         # check the verification hash (md5 or sha512)
         digest=$(awk '/^install: / { print $4; exit }' desc)
         md5digactual=$(md5sum "$file" | awk '{print $1}')
-        if ! [[ $digest == "$md5digactual" ]]
+        if [ "$digest" != "$md5digactual" ]
         then
             shadigactual=$(sha512sum "$file" | awk '{print $1}')
-            if ! [[ $digest == "$shadigactual" ]]
+            if [ "$digest" != "$shadigactual" ]
             then
                 echo "Verification hash did not match, exiting"
                 rm "$file" # Remove the file with bad checksum
@@ -240,12 +240,12 @@ function installPkg()
             fi
         fi
 
-        echo "Unpacking..."
+        echo "Unpacking [$file]..."
         # determine file type
         if [ "${file##*.}" == "xz" ]; then
-            tar xvJf -C / "$file" > "$SETUP_DIR/$pkg.lst"
+            tar -C / -xvJf "$file" > "$SETUP_DIR/$pkg.lst" || return 1
         else
-            tar xvjf -C / "$file" > "$SETUP_DIR/$pkg.lst"
+            tar -C / -xvjf "$file" > "$SETUP_DIR/$pkg.lst" || return 1
         fi
         gzip -f "$SETUP_DIR/$pkg.lst"
         cd ../.. || return
@@ -263,7 +263,7 @@ function installPkg()
 
         # shellcheck disable=SC2016
         echo '/^requires: / {s=gensub("(requires: )?([^ ]+) ?", "\\2 ", "g", $0); print s}' > /tmp/awk.$$
-        requires=$(awk -f /tmp/awk.$$ "release/$pkg/desc")
+        requires=$(awk --file=/tmp/awk.$$  "release/$pkg/desc")
 
         warn=0
         if [[ ! -z "$requires" ]]
@@ -336,12 +336,15 @@ function removePkg()
         fi
 
         gzip -d "$SETUP_DIR/$pkg.lst.gz" | awk '/[^\/]$/ {print "rm -f \"/" $0 "\""}' | sh
-        rm "$SETUP_DIR/$pkg.lst.gz"
+        rm "$SETUP_DIR/$pkg.lst"
         rm -f "/etc/postinstall/$pkg.sh.done"
 
         awk -v pkg="$pkg" '{if (pkg != $1) print $0}' "$INSTALLED_DB" > /tmp/awk.$$
         mv "$INSTALLED_DB" "${INSTALLED_DB}-save"
         mv /tmp/awk.$$ "$INSTALLED_DB"
+
+        # clean up the downloaded package details
+        rm -r "release/$pkg"
 
         echo "Package $pkg removed"
 
@@ -403,7 +406,9 @@ function show()
 
 function check_inprogress()
 {
-    [[ $NOSCRIPTS -eq 0 ]] && check_only_one_running "pact"
+    if [[ $NOSCRIPTS -eq 0 ]]; then
+        check_only_one_running "pact"
+    fi
 }
 
 function checkpackages()
@@ -509,6 +514,7 @@ while [ $# -gt 0 ]; do
             shift
             check_inprogress
             checkpackages "$@"
+            findworkspace
             removePkg "$@"
             exit 0
             ;;
@@ -517,11 +523,16 @@ while [ $# -gt 0 ]; do
             shift
             check_inprogress
             checkpackages "$@"
-            checkCygwin
-            removePkg "$@"
             findworkspace
+            removePkg "$@"
+            checkCygwin
             getsetup
             installPkg "$@"
+            exit 0
+            ;;
+
+        *)
+            usage
             exit 0
             ;;
 
