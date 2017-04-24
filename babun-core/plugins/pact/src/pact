@@ -114,7 +114,7 @@ function getsetup()
         # create backup existing file
         mv "$SETUP_FILE" "${SETUP_FILE}-save"
 
-        if wget --user-agent="$USER_AGENT" -N "$MIRROR/$CYGWIN_VERSION/setup.bz2"; then
+        if wget --user-agent="$USER_AGENT" -N "${MIRROR%/}/$CYGWIN_VERSION/setup.bz2"; then
             if [ -e setup.bz2 ]; then
                 bunzip2 setup.bz2
                 mv setup "$SETUP_FILE"
@@ -123,7 +123,7 @@ function getsetup()
             fi
         fi
 
-        if wget --user-agent="$USER_AGENT" -N "$MIRROR/$CYGWIN_VERSION/$SETUP_FILE"; then
+        if wget --user-agent="$USER_AGENT" -N "${MIRROR%/}/$CYGWIN_VERSION/$SETUP_FILE"; then
             if [ -e "$SETUP_FILE" ]; then
                 echo "Updated $SETUP_FILE"
                 return 0
@@ -224,7 +224,7 @@ function installPkg()
         # download and unpack the bz2 file
         file=$(basename "$install")
         cd "release/$pkg" || return
-        wget --user-agent="$USER_AGENT" -nc "$MIRROR/$install"
+        wget --user-agent="$USER_AGENT" -nc "${MIRROR%/}/$install"
 
         # check the verification hash (md5 or sha512)
         digest=$(awk '/^install: / { print $4; exit }' "$desc")
