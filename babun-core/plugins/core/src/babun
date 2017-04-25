@@ -13,53 +13,62 @@ core="$babun_source/babun-core"
 
 check_only_one_running "babun"
 
+PROG=babun
+USAGE="\
+$PROG: Manages the instance of $PROG.
+
+Usage:
+    $PROG update to fetch the newest version of $PROG
+    $PROG check to check if the installation is correct
+    $PROG shell to display the name of the user's default shell (may not be the currently used shell)
+    $PROG shell <new_shell> to set the user's default shell to new_shell
+    $PROG install to (re)install $PROG to the current user's home folder
+    $PROG login to login to the user's default shell
+    $PROG <plugin_name> cmd to execute cmd provided by the given plugin
+
+Options:
+    --help
+    --version
+    --welcome
+"
+
 function usage()
 {
-    echo "babun: Manages the instance of babun."
-    echo ""
-    echo "Usage:"
-    echo "  \"babun update\" to fetch the newest version of babun"
-    echo "  \"babun check\" to check if the installation is correct"
-    echo "  \"babun shell\" to display the name of the user's default shell (may not be the currently used shell)"
-    echo "  \"babun shell <new_shell>\" to set the user's default shell to new_shell"
-    echo "  \"babun install\" to (re)install babun to the current user's home folder"
-    echo "  \"babun login\" to login to the user's default shell"
-    echo "  \"babun <plugin_name> cmd\" to execute cmd provided by the given plugin"
-    echo "Options:"
-    echo "  --help"
-    echo "  --version"
-    echo "  --welcome"
+    echo "$USAGE"
 }
 
 function version()
 {
-    echo "babun version $(cat $babun/installed/babun 2> /dev/null || echo '1.0.1 ???')"
+    echo "$PROG version $(cat $babun/installed/babun 2> /dev/null || echo '1.0.1 ???')"
     echo "Created and maintained by Tom Bujok (@tombujok) and Lukasz Pielak (@lukaszpielak)."
     echo "Copyright (c) 2014-2016."
 }
 
 function welcome()
 {
-    echo "Welcome to babun - the Windows shell you will love!"
-    echo "You have got a lot of things under the hood here!"
-    echo ""
-    echo "   pact -> a package manager that handles installation of babun packages"
-    echo "      pact install tar -> will install tar package on your system"
-    echo "      pact remove tar -> will remove tar package from your system"
-    echo ""
-    echo "   babun -> a script that manages babun and enables auto-update"
-    echo "      babun help -> will display babun script usage"
-    echo "      babun check -> will check the configuration (proxy, connection, etc)"
-    echo "      babun update -> will update babun to the newest version"
-    echo "      babun --welcome -> will display this message again"
-    echo ""
-    echo "There are a couple of plugins installed by default: oh-my-zsh, pact, cacert, etc."
-    echo "There are also a lot of dev tools such as git, svn, unix utils, etc"
-    echo "If you would like to contribute, code up a plugin or report an issue just"
-    echo "go to GitHub: https://github.com/babun/babun"
-    echo ""
-    echo "If you like the project, star it on GitHub and follow us on twitter!"
-    echo "This project is created and maintained by Tom Bujok (@tombujok) and Lukasz Pielak (@lukaszpielak)."
+    local msg="\
+Welcome to $PROG - the Windows shell you will love!
+You have got a lot of things under the hood here!
+
+    pact -> a package manager that handles installation of $PROG packages
+        pact install tar -> will install tar package on your system
+        pact remove tar -> will remove tar package from your system
+
+    $PROG -> a script that manages $PROG and enables auto-update
+        $PROG help -> will display $PROG script usage
+        $PROG check -> will check the configuration (proxy, connection, etc)
+        $PROG update -> will update $PROG to the newest version
+        $PROG --welcome -> will display this message again
+
+There are a couple of plugins installed by default: oh-my-zsh, pact, cacert, etc.
+There are also a lot of dev tools such as git, svn, unix utils, etc
+If you would like to contribute, code up a plugin or report an issue just
+go to GitHub: https://github.com/babun/babun
+
+If you like the project, star it on GitHub and follow us on twitter!
+This project is created and maintained by Tom Bujok (@tombujok) and Lukasz Pielak (@lukaszpielak).
+"
+    echo "$msg"
 }
 
 function update()
