@@ -116,5 +116,11 @@ function plugin_uninstall {
         exit 1
     fi
 
-    bash "$uninstall_script" || echo "Could not uninstall plugin [$plugin_name]"
+    if ! bash "$uninstall_script"; then
+        echo "Could not uninstall plugin [$plugin_name]"
+        return 0
+    fi
+
+    rm -f "$babun/installed/$plugin_name"
+    echo "$plugin_name successfully uninstalled"
 }

@@ -13,6 +13,7 @@ winpty plugin commands are subcommands for babun
 
 Usage:
     winpty install
+    winpty uninstall
     winpty --help
 "
     echo "$msg"
@@ -29,6 +30,10 @@ case $1 in
 
     install)
         plugin_install "winpty"
+        ;;
+
+    uninstall)
+        plugin_uninstall "winpty"
         ;;
 
     *)
