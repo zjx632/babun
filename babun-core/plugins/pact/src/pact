@@ -195,7 +195,7 @@ function installPkg()
     for pkg in "$@"
     do
 
-        if [ "$(installed "$pkg")" -gt 0 ]; then
+        if [[ $FORCE -eq 0 ]] && [ "$(installed "$pkg")" -gt 0 ]; then
             echo "Package $pkg is already installed, skipping"
             continue
         fi
@@ -229,7 +229,7 @@ function installPkg()
         # download and unpack the bz2 file
         file=$(basename "$install")
         cd "release/$pkg" || return
-        wget --user-agent="$USER_AGENT" -nc "${MIRROR%/}/$install"
+        wget --user-agent="$USER_AGENT" "${MIRROR%/}/$install"
 
         # check the verification hash (md5 or sha512)
         digest=$(awk '/^install: / { print $4; exit }' desc)
