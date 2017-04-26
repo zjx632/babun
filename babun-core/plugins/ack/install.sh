@@ -4,10 +4,24 @@ source "/usr/local/etc/babun.instance"
 # shellcheck source=/usr/local/etc/babun/source/babun-core/tools/script.sh
 source "$babun_tools/script.sh"
 
-if [[ "$DISABLE_PLUGIN_ACK" == "true" ]]; then
-    return 0
-fi
 
-tar -C "$babun_plugins/ack/src/" -xf "$babun_plugins/ack/src/ack-214-single.tar"
-/bin/cp -rf "$babun_plugins/ack/src/ack-214-single" /usr/local/bin/ack
-chmod 755 /usr/local/bin/ack
+install() {
+
+    if [[ "$DISABLE_PLUGIN_ACK" == "true" ]]; then
+        echo "ack plugin is currently disabled; check ~/.babunrc to enable"
+        return 0
+    fi
+
+    local source=https://beyondgrep.com/ack-2.18-single-file
+    local bin=/usr/local/bin/ack
+
+    # download the file and make executable
+    wget -O "$bin" "$source"
+    chmod 755 "$bin"
+
+    # make sure it is there and being found as part of the path
+    echo "# exectuable:"
+    which ack
+}
+
+install

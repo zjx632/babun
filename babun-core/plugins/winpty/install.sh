@@ -49,7 +49,7 @@ install() {
 
     # make sure it is there and being found as part of the path
     echo "# exectuable:"
-    which winpty 2> /dev/null
+    which winpty
 }
 
 

@@ -24,9 +24,6 @@ unset GREP_OPTIONS
 # List of user agents: http://www.useragentstring.com/pages/useragentstring.php
 export USER_AGENT="Mozilla/5.0 (Windows; U; MSIE 9.0; WIndows NT 9.0; en-US))"
 
-alias wget='wget --user-agent="$USER_AGENT"'
-alias curl='curl -A "$USER_AGENT"'
-
 # clipboard handling
 if [ -e /dev/clipboard ]; then
    alias pbcopy='cat >/dev/clipboard'
@@ -44,8 +41,6 @@ export CHECK_TIMEOUT_IN_SECS=4
 
 # otherwise vim will not find /etc/vimrc
 export VIM=/etc
-
-alias vi=vim
 
 # Fake 'sudo' command
 # (see http://superuser.com/questions/122418/theres-no-sudo-command-in-cygwin)

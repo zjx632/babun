@@ -7,14 +7,14 @@ source "$babun_tools/script.sh"
 src="$babun_source/babun-core/plugins/shell/src/"
 dest="$babun/home/shell/"
 
-/bin/cp -rf /etc/minttyrc /etc/minttyrc.old  || echo ""
-/bin/cp -rf $src/minttyrc /etc/minttyrc
+/bin/cp -f /etc/minttyrc /etc/minttyrc.old  || :
+/bin/cp -f $src/minttyrc /etc/minttyrc
 
-/bin/cp -rf /etc/nanorc /etc/nanorc.old  || echo ""
-/bin/cp -rf $src/nanorc /etc/nanorc
+/bin/cp -f /etc/nanorc /etc/nanorc.old  || :
+/bin/cp -f $src/nanorc /etc/nanorc
 
-/bin/cp -rf /etc/vimrc /etc/vimrc.old  || echo ""
-/bin/cp -rf $src/vimrc /etc/vimrc
+/bin/cp -f /etc/vimrc /etc/vimrc.old  || :
+/bin/cp -f $src/vimrc /etc/vimrc
 
 mkdir -p "$dest"
 /bin/cp -rf "$src/.vim" "$dest/.vim"
