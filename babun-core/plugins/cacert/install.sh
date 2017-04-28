@@ -4,9 +4,12 @@ source "/usr/local/etc/babun.instance"
 # shellcheck source=/usr/local/etc/babun/source/babun-core/tools/script.sh
 source "$babun_tools/script.sh"
 
-cd /usr/ssl/certs
-curl http://curl.haxx.se/ca/cacert.pem | awk 'split_after==1{n++;split_after=0} /-----END CERTIFICATE-----/ {split_after=1} {print > "cert" n ".pem"}'
-#c_rehash
+run() {
+    # reference http://stackoverflow.com/a/4454754
+    pushd /usr/ssl/certs 2>/dev/null
+    curl https://curl.haxx.se/ca/cacert.pem | awk '{print > "cert" (1+n) ".pem"} /-----END CERTIFICATE-----/ {n++}'
+    c_rehash
+    popd 2>/dev/null
+}
 
-#possible problem with c_rehash in newest cygwin
-#for file in *.pem; do ln -s $file `openssl x509 -hash -noout -in $file`.0; done
+run

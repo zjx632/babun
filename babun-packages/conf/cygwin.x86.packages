@@ -50,6 +50,7 @@ ncurses
 ncursesw
 openssh
 openssl
+openssl-perl
 pcre
 perl
 perl-Archive-Zip
