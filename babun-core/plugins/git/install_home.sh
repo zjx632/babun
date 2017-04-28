@@ -62,7 +62,7 @@ if [[ "$gitlast" == "git log -1 --stat" ]]; then
 fi
 
 # install completion for git
-local src=https://raw.githubusercontent.com/git/git/master/contrib/completion
+src=https://raw.githubusercontent.com/git/git/master/contrib/completion
 wget -O /etc/bash_completion.d/git "$src/git-completion.bash"
 
 if [ "$SHELL" = "/bin/zsh" ]; then
