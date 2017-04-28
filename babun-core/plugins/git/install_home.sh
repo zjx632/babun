@@ -61,11 +61,11 @@ if [[ "$gitlast" == "git log -1 --stat" ]]; then
     git config --global "alias.last" "log -1 --stat"
 fi
 
-# install completion got git
-_shell=$(babun shell)
-if [ "/bin/bash" = "$_shell" ]; then
-    wget -O /etc/bash_completion.d/git https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash
-else
-    mkdir -p "$homedir/.zshrc"
-    wget -O "$homedir/.zshrc/_git" https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.zsh
+# install completion for git
+local src=https://raw.githubusercontent.com/git/git/master/contrib/completion
+wget -O /etc/bash_completion.d/git "$src/git-completion.bash"
+
+if [ "$SHELL" = "/bin/zsh" ]; then
+    mkdir -p "$ZSH/completions"
+    wget -O "$ZSH/completions/_git" "$src/git-completion.zsh"
 fi

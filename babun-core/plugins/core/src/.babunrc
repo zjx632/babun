@@ -38,6 +38,10 @@ export DISABLE_PLUGIN_WINPTY="true"
 # Uncomment to enable bloda detection
 # export CYGWIN="nodosfilewarning mintty detect_bloda"
 
+# select which version of git-flow install
+# stable or develop
+export GIT_FLOW_BRANCH=stable
+
 alias wget='wget --user-agent="$USER_AGENT"'
 alias curl='curl -A "$USER_AGENT"'
 alias vi=vim
