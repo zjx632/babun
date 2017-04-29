@@ -4,13 +4,18 @@ source "/usr/local/etc/babun.instance"
 # shellcheck source=/usr/local/etc/babun/source/babun-core/tools/script.sh
 source "$babun_tools/script.sh"
 
-if [[ "$DISABLE_PLUGIN_XSERVER" == "true" ]]; then
-    return 0
-fi
 
-src="$babun_source/babun-core/plugins/xserver/src/."
-dest="$babun/home/xserver"
+run() {
+    if [[ "$DISABLE_PLUGIN_XSERVER" == "true" ]]; then
+        return 0
+    fi
 
-pact install xorg-server xinit xorg-docs
+    local src="$babun_source/babun-core/plugins/xserver/src/."
+    local dest="$babun/home/xserver"
 
-/bin/cp -rf "$src/" "$dest"
+    pact install xorg-server xinit xorg-docs
+
+    cp -rf "$src" "$dest/"
+}
+
+run

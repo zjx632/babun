@@ -5,7 +5,7 @@ source "/usr/local/etc/babun.instance"
 source "$babun_tools/script.sh"
 
 
-uninstall() {
+run() {
     # Reference: https://github.com/petervanderdoes/gitflow-avh/wiki/Installing-on-Windows#cygwin
     local url=https://raw.githubusercontent.com/petervanderdoes/gitflow/develop/contrib/gitflow-installer.sh
     local script=gitflow-installer.sh
@@ -19,4 +19,4 @@ uninstall() {
     popd 2>/dev/null
 }
 
-uninstall
+run

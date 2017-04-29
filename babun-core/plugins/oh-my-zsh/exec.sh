@@ -9,14 +9,11 @@ source "$babun_tools/plugins.sh"
 
 usage() {
     local msg="\
-shell-here plugin commands are subcommands for babun
+oh-my-zsh plugin commands are subcommands for babun
 
 Usage:
-    shell-here install
-    shell-here init     *DEPRECATED*
-    shell-here uninstall
-    shell-here remove   *DEPRECATED*
-    shell-here --help
+    oh-my-zsh install
+    oh-my-zsh --help
 "
     echo "$msg"
 }
@@ -30,12 +27,9 @@ case $1 in
     --help)
         usage ; exit 0 ;;
 
-    install | init)
-        plugin_install_home "shell-here"
-        ;;
-
-    uninstall | remove)
-        plugin_uninstall "shell-here"
+    install)
+        plugin_install "oh-my-zsh"
+        plugin_install_home "oh-my-zsh"
         ;;
 
     *)

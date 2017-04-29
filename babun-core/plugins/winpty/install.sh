@@ -5,7 +5,7 @@ source "/usr/local/etc/babun.instance"
 source "$babun_tools/script.sh"
 
 
-install() {
+run() {
 
     if [[ "$DISABLE_PLUGIN_WINPTY" == "true" ]]; then
         echo "winpty plugin is currently disabled; check ~/.babunrc to enable"
@@ -52,5 +52,4 @@ install() {
     which winpty
 }
 
-
-install
+run

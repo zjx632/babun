@@ -5,7 +5,7 @@ source "/usr/local/etc/babun.instance"
 source "$babun_tools/script.sh"
 
 
-install() {
+run() {
     # install completion for git-flow
     local base=https://raw.githubusercontent.com/petervanderdoes/git-flow-completion/develop
 
@@ -18,4 +18,4 @@ install() {
 
 }
 
-install
+run

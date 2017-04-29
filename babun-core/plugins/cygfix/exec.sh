@@ -9,14 +9,12 @@ source "$babun_tools/plugins.sh"
 
 usage() {
     local msg="\
-shell-here plugin commands are subcommands for babun
+cygfix plugin commands are subcommands for babun
 
 Usage:
-    shell-here install
-    shell-here init     *DEPRECATED*
-    shell-here uninstall
-    shell-here remove   *DEPRECATED*
-    shell-here --help
+    cygfix install
+    cygfix uninstall
+    cygfix --help
 "
     echo "$msg"
 }
@@ -30,12 +28,12 @@ case $1 in
     --help)
         usage ; exit 0 ;;
 
-    install | init)
-        plugin_install_home "shell-here"
+    install)
+        plugin_install "cygfix"
         ;;
 
-    uninstall | remove)
-        plugin_uninstall "shell-here"
+    uninstall)
+        plugin_uninstall "cygfix"
         ;;
 
     *)

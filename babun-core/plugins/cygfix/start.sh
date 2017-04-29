@@ -1,10 +1,16 @@
 #!/bin/bash
 
-# Rename cygwin ping to fallback to Windows ping.exe as work-around for administrative privileges required for cygwin ping
 
-ping='/usr/bin/ping.exe'
-cygping='/usr/bin/cygping.exe'
+run() {
+    # Rename cygwin ping to fallback to Windows ping.exe as work-around
+    # for administrative privileges required for cygwin ping
 
-if [ ! -f $cygping ]; then
-    mv $ping $cygping
-fi
+    local _ping='/usr/bin/ping.exe'
+    local cygping='/usr/bin/cygping.exe'
+
+    if [ ! -f $cygping ]; then
+        mv $_ping $cygping
+    fi
+}
+
+run

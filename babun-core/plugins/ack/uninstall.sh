@@ -5,11 +5,11 @@ source "/usr/local/etc/babun.instance"
 source "$babun_tools/script.sh"
 
 
-uninstall() {
+run() {
 
     rm -f /usr/local/bin/ack
     rm -f "$homedir/.vim/plugin/ack.vim"
     rm -f "$homedir/.vim/doc/ack*.txt"
 }
 
-uninstall
+run

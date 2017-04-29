@@ -5,7 +5,7 @@ source "/usr/local/etc/babun.instance"
 source "$babun_tools/script.sh"
 
 
-uninstall() {
+run() {
 
     local state_dir="$babun/external/winpty"
 
@@ -18,4 +18,4 @@ uninstall() {
     rm -f "$state_dir/installed"
 }
 
-uninstall
+run

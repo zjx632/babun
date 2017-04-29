@@ -5,7 +5,7 @@ source "/usr/local/etc/babun.instance"
 source "$babun_tools/script.sh"
 
 
-install() {
+run() {
 
     if [[ "$DISABLE_PLUGIN_ACK" == "true" ]]; then
         return 0
@@ -28,4 +28,4 @@ install() {
     rm -f "$archive"
 }
 
-install
+run

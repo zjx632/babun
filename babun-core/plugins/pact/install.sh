@@ -4,16 +4,20 @@ source "/usr/local/etc/babun.instance"
 # shellcheck source=/usr/local/etc/babun/source/babun-core/tools/script.sh
 source "$babun_tools/script.sh"
 
-src="$babun_source/babun-core/plugins/pact/src"
-dest="$babun/home/pact/.pact"
+run() {
+    local src="$babun_source/babun-core/plugins/pact/src"
+    local dest="$babun/home/pact/.pact"
 
-/bin/cp -rf $src/pact /usr/local/bin
-chmod 755 /usr/local/bin/pact
+    cp -rf $src/pact /usr/local/bin
+    chmod 755 /usr/local/bin/pact
 
-if [ ! -d "$dest" ]; then
-    mkdir -p "$dest"
-fi
+    if [ ! -d "$dest" ]; then
+        mkdir -p "$dest"
+    fi
 
-if [ ! -f "$dest/pact.repo" ]; then
-    /bin/cp "$src/pact.repo" "$dest"
-fi
+    if [ ! -f "$dest/pact.repo" ]; then
+        cp "$src/pact.repo" "$dest"
+    fi
+}
+
+run
