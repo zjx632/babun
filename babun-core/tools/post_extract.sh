@@ -19,7 +19,7 @@ echo "[babun] HOME set to $HOME"
 if [[ ! "$HOME" == /cygdrive* ]]; then
     echo "[babun] Running mkpasswd for CYGWIN home"
     # regenerate users' info
-    /bin/mkpasswd.exe -l -c > /etc/passwd
+    /bin/mkpasswd -l -c > /etc/passwd
 else
     echo "[babun] Running mkpasswd for WINDOWS home"
     # regenerate users' info using windows paths

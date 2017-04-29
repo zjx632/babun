@@ -66,10 +66,12 @@ function plugin_install {
     fi
 
     # execute plugin's install.sh in a separate shell
-    install_script="$babun/source/babun-core/plugins/$plugin_name/install.sh"
-    if [[ -f "$install_script" ]]; then
-        bash "$install_script"
+    local install_script="$babun/source/babun-core/plugins/$plugin_name/install.sh"
+    if [[ ! -f "$install_script" ]]; then
+        echo "ERROR: Cannot find plugin install.sh script [$plugin_name] [$install_script]"
+        exit 1
     fi
+    bash "$install_script"
 
     # sets the version to the newest one
     # uses the plugin descriptor variables
@@ -79,15 +81,9 @@ function plugin_install {
 function plugin_install_home {
     local plugin_name="$1"
     echo "Installing plugin's home [$plugin_name]"
-    local plugin_desc="$babun/source/babun-core/plugins/$plugin_name/plugin.desc"
-    if [[ ! -f "$plugin_desc" ]]; then
-        echo "ERROR: Cannot find plugin descriptor [$plugin_name] [$plugin_desc]"
-        exit 1
-    fi
 
     # execute plugin's install_home.sh in a separate shell
     local install_home_script="$babun/source/babun-core/plugins/$plugin_name/install_home.sh"
-
     if [[ ! -f "$install_home_script" ]]; then
         echo "ERROR: Cannot find plugin install_home.sh script [$plugin_name] [$install_home_script]"
         exit 1
@@ -112,7 +108,7 @@ function plugin_uninstall {
 
     local uninstall_script="$babun_plugins/$plugin_name/uninstall.sh"
     if [[ ! -f "$uninstall_script" ]]; then
-        echo "ERROR: Cannot find plugin uninstall.sh script [$plugin_name] [$start_script]"
+        echo "ERROR: Cannot find plugin uninstall.sh script [$plugin_name] [$uninstall_script]"
         exit 1
     fi
 
