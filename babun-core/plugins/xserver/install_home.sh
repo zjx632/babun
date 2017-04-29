@@ -6,10 +6,6 @@ source "$babun_tools/script.sh"
 
 
 run() {
-    if [[ "$DISABLE_PLUGIN_XSERVER" == "true" ]]; then
-        return 0
-    fi
-
     local src="$babun/home/xserver"
 
     # if XWinrc not installed

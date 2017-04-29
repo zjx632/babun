@@ -6,7 +6,6 @@ source "$babun_tools/script.sh"
 
 
 run() {
-
     local state_dir="$babun/external/winpty"
 
     if [ ! -f "$state_dir/installed" ]; then

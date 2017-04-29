@@ -5,4 +5,10 @@ source "/usr/local/etc/babun.instance"
 source "$babun_tools/script.sh"
 
 
-# Nothing to do here
+run() {
+    rm -rf "$babun/external/oh-my-zsh"
+    rm -rf "$babun/home/oh-my-zsh/.oh-my-zsh"
+    rm -rf "$homedir/.oh-my-zsh"
+}
+
+run

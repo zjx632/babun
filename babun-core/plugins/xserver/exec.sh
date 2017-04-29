@@ -13,6 +13,7 @@ xserver plugin commands are subcommands for babun
 
 Usage:
     xserver install
+    xserver uninstall
     xserver --help
 "
     echo "$msg"
@@ -30,6 +31,10 @@ case $1 in
     install)
         plugin_install "xserver"
         plugin_install_home "xserver"
+        ;;
+
+    uninstall)
+        plugin_uninstall "xserver"
         ;;
 
     *)

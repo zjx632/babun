@@ -6,12 +6,6 @@ source "$babun_tools/script.sh"
 
 
 run() {
-
-    if [[ "$DISABLE_PLUGIN_WINPTY" == "true" ]]; then
-        echo "winpty plugin is currently disabled; check ~/.babunrc to enable"
-        return 0
-    fi
-
     local arch=${PROCESSOR_ARCHITECTURE/AMD64/x86_64}
     local archive=/tmp/winpty.tar.gz
     local repo=https://github.com/rprichard/winpty/releases/download

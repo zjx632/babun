@@ -13,6 +13,7 @@ oh-my-zsh plugin commands are subcommands for babun
 
 Usage:
     oh-my-zsh install
+    oh-my-zsh uninstall
     oh-my-zsh --help
 "
     echo "$msg"
@@ -30,6 +31,10 @@ case $1 in
     install)
         plugin_install "oh-my-zsh"
         plugin_install_home "oh-my-zsh"
+        ;;
+
+    uninstall)
+        plugin_uninstall "oh-my-zsh"
         ;;
 
     *)

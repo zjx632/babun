@@ -19,8 +19,6 @@ export LC_ALL="en_US.UTF-8"
 # export DISABLE_PLUGIN_ACK="true"
 # export DISABLE_PLUGIN_OH_MY_ZSH="true"
 # export DISABLE_PLUGIN_SHELL_HERE="true"
-export DISABLE_PLUGIN_XSERVER="true"
-export DISABLE_PLUGIN_WINPTY="true"
 
 # Uncomment this lines to set up your proxy
 # export http_proxy=http://user:password@server:port

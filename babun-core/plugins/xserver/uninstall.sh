@@ -6,12 +6,11 @@ source "$babun_tools/script.sh"
 
 
 run() {
-    local src="$babun_source/babun-core/plugins/xserver/src/."
-    local dest="$babun/home/xserver"
-
-    pact install xorg-server xinit xorg-docs
-
-    cp -rf "$src" "$dest/"
+    rm -f "$homedir/.XWinrc"
+    rm -f "$homedir/.Xresources"
+    rm -f "$homedir/.startxwinrc"
+    rm -rf "$babun/home/xserver"
+    pact remove xorg-server xinit xorg-docs
 }
 
 run

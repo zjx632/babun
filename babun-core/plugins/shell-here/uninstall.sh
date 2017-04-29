@@ -19,10 +19,6 @@ remove() {
 }
 
 run() {
-    if [[ "$DISABLE_PLUGIN_SHELL_HERE" == "true" ]]; then
-        return 0
-    fi
-
     # uninstall registry keys
     remove
 }

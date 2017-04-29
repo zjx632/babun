@@ -6,7 +6,6 @@ source "$babun_tools/script.sh"
 
 
 run() {
-
     if [[ "$DISABLE_PLUGIN_ACK" == "true" ]]; then
         echo "ack plugin is currently disabled; check ~/.babunrc to enable"
         return 0
