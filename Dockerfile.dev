@@ -1,10 +1,19 @@
-FROM koalaman/shellcheck
+FROM alpine:3.6
 
 RUN apk add --no-cache \
         bash \
+        ca-certificates \
+        tar \
+        wget \
+        xz \
     && rm -f /var/cache/apk/*
 
 RUN addgroup -S tester && adduser -S -G tester tester
+
+RUN wget -O /tmp/shellcheck.tar.xz https://storage.googleapis.com/shellcheck/shellcheck-latest.linux.x86_64.tar.xz \
+    && tar Jxf /tmp/shellcheck.tar.xz --strip-components=1 -C /usr/local/bin \
+    && chmod 755 /usr/local/bin/shellcheck \
+    && rm -rf /tmp/shellcheck.tar.xz
 
 COPY babun-core/plugins/core/src/babun.instance /usr/local/etc/babun.instance
 COPY babun-core/plugins/core/src/babun.rc /usr/local/etc/babun.rc
@@ -12,5 +21,4 @@ COPY babun-core/plugins/pact/src/pact.repo /home/tester/.pact/pact.repo
 
 ENV HOME=/home/tester
 
-# reset the entrypoint
-ENTRYPOINT []
+WORKDIR /mnt
