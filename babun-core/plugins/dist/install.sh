@@ -14,6 +14,9 @@ run() {
     cp -rf "$src/fonts" "$babun_root"
     cp -rf "$src/tools" "$babun_root"
 
+    # create dist/ directory required by update script
+    mkdir -p "$babun_root/dist"
+
     # copy scripts
     cp -rf "$src/start/update.bat" "$babun_root"
     cp -rf "$src/start/rebase.bat" "$babun_root"
