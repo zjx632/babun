@@ -85,7 +85,8 @@ perl-Test-Reporter-Transport-Metabase
 perl-Test-Simple
 perl-XML-LibXML
 perl-XML-Parser
-perl-YAMLping
+perl-YAML
+ping
 pkg-config
 procps
 readline
