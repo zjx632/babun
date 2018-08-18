@@ -57,7 +57,7 @@ GOTO UNKNOWNFLAG
 
 :RUN
 if "%MIRROR%"=="" (
-    set MIRROR=http://mirrors.kernel.org/sourceware/cygwin
+    set MIRROR=http://mirrors.163.com/cygwin/
     GOTO RUN
 )
 

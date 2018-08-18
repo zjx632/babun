@@ -101,10 +101,11 @@ def executeBabunPackages(String arch) {
 def executeBabunCygwin(String arch, boolean downloadOnly = false) {
     String module = "babun-cygwin"
     log "EXEC ${module}"
+	if (shouldSkipModule(module)) return
     File workingDir = new File(getRoot(), module);
     String input = workingDir.absolutePath
 	String repo = new File(getTarget(), "babun-packages").absolutePath
-    String mirror = new File(getRoot(), "cygwin.repository").absolutePath
+    String mirror = new File(getRoot(), "cygwin.mirror").absolutePath
     String out = new File(getTarget(), "${module}").absolutePath
     String pkgs = new File(getRoot(), "babun-packages/conf/cygwin.${arch}.packages")
     String downOnly = downloadOnly as String
@@ -116,12 +117,12 @@ def executeBabunCygwin(String arch, boolean downloadOnly = false) {
 def executeBabunCore() {
     String module = "babun-core"
     log "EXEC ${module}"
-    if (shouldSkipModule(module)) return
+//  if (shouldSkipModule(module)) return
     File workingDir = new File(getRoot(), module);
     String root = getRoot().absolutePath
     String cygwin = new File(getTarget(), "babun-cygwin/cygwin").absolutePath
     String out = new File(getTarget(), "${module}").absolutePath
-    String branch = getenv("babun_branch") ? getenv("babun_branch") : "release"
+    String branch = getenv("babun_branch") ? getenv("babun_branch") : "develop"
     println "Taking babun branch [${branch}]"
     def command = ["groovy.bat", "core.groovy", root, cygwin, out, branch]
     executeCmd(command, workingDir, TEN_MINUTES)

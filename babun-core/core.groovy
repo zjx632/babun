@@ -56,10 +56,10 @@ def installCore(File rootFolder, File outputFolder, String babunBranch) {
     // checkout babun
     String repo = "\$( cygpath '${rootFolder.absolutePath}' )"
     String src = "/usr/local/etc/babun/source"
-    String clone = "git -c 'http.sslverify=false' clone " +
-        "\$( git --git-dir=\\\"${repo}/.git\\\" config --get remote.origin.url ) ${src}"
-    String checkout = "git --git-dir='${src}/.git' --work-tree='${src}' checkout ${babunBranch}"
-    executeCmd("${bash} -c \"${clone}; ${checkout};\"", 5)
+    String clone = "git clone ${repo}/.git ${src}"	
+    String checkout = "git --git-dir='${src}/.git' --work-tree='${src}' checkout ${babunBranch}"	   
+	String pull = "git --git-dir='${src}/.git' --work-tree='${src}' checkout @"
+    executeCmd("${bash} -c \"${clone}; ${checkout}; ${pull};\"", 5)
 
     // remove windows new line feeds
     String dos2unix = "/bin/find /usr/local/etc/babun/source/babun-core -type f -exec dos2unix {} \\;"
