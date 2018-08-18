@@ -10,7 +10,7 @@ def execute() {
     try {
         checkArguments()
         (confFolder, outputFolder, arch) = initEnvironment()
-        downloadPackages(confFolder, outputFolder, arch)
+        //downloadPackages(confFolder, outputFolder, arch)
         copyPackagesListToTarget(confFolder, outputFolder, arch)
     } catch (Exception ex) {
         error("Unexpected error occurred: " + ex + " . Quitting!")
@@ -38,7 +38,8 @@ def initEnvironment() {
 def copyPackagesListToTarget(File confFolder, File outputFolder, String bitVersion) {
     File packagesFile = new File(confFolder, "cygwin.${bitVersion}.packages")
     File outputFile = new File(outputFolder, "cygwin.${bitVersion}.packages")
-    outputFile.createNewFile()
+    outputFile.delete()
+	outputFile.createNewFile()
     outputFile << packagesFile.text
 }
 
@@ -68,7 +69,7 @@ def downloadPackages(File confFolder, File outputFolder, String bitVersion) {
 def downloadSetupIni(String repository, String bitVersion, File outputFolder) {
     println "Downloading [setup.ini] from repository [${repository}]"
     String setupIniUrl = "${repository}/${bitVersion}/setup.ini"
-    String downloadSetupIni = "wget -nc -l 2 -r -np -q --cut-dirs=3 -P " + outputFolder.getAbsolutePath() + " " + setupIniUrl
+    String downloadSetupIni = "wget -nc -l 2 -r -np -q --cut-dirs=2 -P " + outputFolder.getAbsolutePath() + " " + setupIniUrl
     executeCmd(downloadSetupIni, 5)
     String setupIniContent = setupIniUrl.toURL().text
     return setupIniContent
@@ -137,7 +138,7 @@ def parsePackagePath(String pkgInfo) {
 
 def downloadPackage(String repositoryUrl, String packagePath, File outputFolder) {
     String packageUrl = repositoryUrl + packagePath
-    String downloadCommand = "wget -nc -l 2 -r -np -q --cut-dirs=3 -P " + outputFolder.getAbsolutePath() + " " + packageUrl
+    String downloadCommand = "wget -nc -l 2 -r -np -q --cut-dirs=1 -P " + outputFolder.getAbsolutePath() + " " + packageUrl
     if (executeCmd(downloadCommand, 5) != 0) {
         println "Could not download " + packageUrl
         return false

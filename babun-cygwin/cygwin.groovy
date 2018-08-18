@@ -4,20 +4,20 @@ import static java.lang.System.*
 execute()
 
 def execute() {
-    File repoFolder, inputFolder, outputFolder, cygwinFolder, pkgsFile
+    File mirrorFile, repoFolder, inputFolder, outputFolder, cygwinFolder, pkgsFile
     boolean downloadOnly
     String arch
     try {
         checkArguments()
-        (repoFolder, inputFolder, outputFolder, cygwinFolder, pkgsFile, downloadOnly, arch) = initEnvironment()
+        (mirrorFile, repoFolder, inputFolder, outputFolder, cygwinFolder, pkgsFile, downloadOnly, arch) = initEnvironment()
         // install cygwin
         File cygwinInstaller = downloadCygwinInstaller(outputFolder, arch)
         if(downloadOnly) {
             println "downloadOnly flag set to true - Cygwin installation skipped.";
             return
         }
-        installCygwin(cygwinInstaller, repoFolder, cygwinFolder, pkgsFile)
-        cygwinInstaller.delete()
+        installCygwin(cygwinInstaller, mirrorFile, repoFolder, cygwinFolder, pkgsFile)
+        //cygwinInstaller.delete()
 
         // handle symlinks
         copySymlinksScripts(inputFolder, cygwinFolder)
@@ -30,24 +30,26 @@ def execute() {
 }
 
 def checkArguments() {
-    if (this.args.length != 6) {
-        error("Usage: cygwin.groovy <repo_folder> <input_folder> <output_folder> <pkgs_file> <download_only>  <arch>")
+	println "checkArguments ${this.args.length}"
+    if (this.args.length != 7) {
+        error("Usage: cygwin.groovy <mirror> <repo_folder> <input_folder> <output_folder> <pkgs_file> <download_only>  <arch>")
         exit(-1)
     }
 }
 
 def initEnvironment() {
-    File repoFolder = new File(this.args[0])
-    File inputFolder = new File(this.args[1])
-    File outputFolder = new File(this.args[2])
-    File pkgsFile = new File(this.args[3])
-    boolean downloadOnly =  Boolean.parseBoolean(this.args[4])
+    File mirrorFile = new File(this.args[0])
+	File repoFolder = new File(this.args[1])
+    File inputFolder = new File(this.args[2])
+    File outputFolder = new File(this.args[3])
+    File pkgsFile = new File(this.args[4])
+    boolean downloadOnly =  Boolean.parseBoolean(this.args[5])
     if (!outputFolder.exists()) {
         outputFolder.mkdir()
     }
     File cygwinFolder = new File(outputFolder, "cygwin")
     cygwinFolder.mkdir()
-    return [repoFolder, inputFolder, outputFolder, cygwinFolder, pkgsFile, downloadOnly, this.args[5]]
+    return [mirrorFile, repoFolder, inputFolder, outputFolder, cygwinFolder, pkgsFile, downloadOnly, this.args[6]]
 }
 
 def downloadCygwinInstaller(File outputFolder, String arch) {
@@ -64,19 +66,20 @@ def downloadCygwinInstaller(File outputFolder, String arch) {
     return cygwinInstaller
 }
 
-def installCygwin(File cygwinInstaller, File repoFolder, File cygwinFolder, File pkgsFile) {
+def installCygwin(File cygwinInstaller, File mirrorFile, File repoFolder, File cygwinFolder, File pkgsFile) {
     println "Installing cygwin"
     String pkgs = pkgsFile.text.trim().replaceAll("(\\s)+", ",")
     println "Packages to install: ${pkgs}"
     String installCommand = "\"${cygwinInstaller.absolutePath}\" " +
             "--quiet-mode " +
             "--no-admin " +
-            "--local-install " +
-            "--local-package-dir \"${repoFolder.absolutePath}\" " +
             "--root \"${cygwinFolder.absolutePath}\" " +
+			"--local-package-dir \"${repoFolder.absolutePath}\" " +
             "--no-shortcuts " +
             "--no-startmenu " +
             "--no-desktop " +
+			"--categories Base " +
+			"--site \"${mirrorFile.text.trim()}\" " +
             "--packages " + pkgs
     println installCommand
     executeCmd(installCommand, 10)

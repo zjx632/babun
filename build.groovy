@@ -5,6 +5,7 @@ import static java.lang.System.getenv
 VERSION = new File("${getRoot()}/babun.version").text.trim()
 TEN_MINUTES = 10
 TWENTY_MINUTES = 20
+SIXTY_MINUTES = 60
 ARG_64BIT = "--64bit"
 
 execute()
@@ -89,7 +90,7 @@ def doRelease(String arch) {
 def executeBabunPackages(String arch) {
     String module = "babun-packages"
     log "EXEC ${module}"
-    if (shouldSkipModule(module)) return
+    //if (shouldSkipModule(module)) return
     File workingDir = new File(getRoot(), module);
     String conf = new File(getRoot(), "${module}/conf/").absolutePath
     String out = new File(getTarget(), "${module}").absolutePath
@@ -102,13 +103,14 @@ def executeBabunCygwin(String arch, boolean downloadOnly = false) {
     log "EXEC ${module}"
     File workingDir = new File(getRoot(), module);
     String input = workingDir.absolutePath
-    String repo = new File(getTarget(), "babun-packages").absolutePath
+	String repo = new File(getTarget(), "babun-packages").absolutePath
+    String mirror = new File(getRoot(), "cygwin.repository").absolutePath
     String out = new File(getTarget(), "${module}").absolutePath
     String pkgs = new File(getRoot(), "babun-packages/conf/cygwin.${arch}.packages")
     String downOnly = downloadOnly as String
     println "Download only flag set to: ${downOnly}"
-    def command = ["groovy.bat", "cygwin.groovy", repo, input, out, pkgs, downOnly, arch]
-    executeCmd(command, workingDir, TEN_MINUTES)
+    def command = ["groovy.bat", "cygwin.groovy", mirror, repo, input, out, pkgs, downOnly, arch]
+    executeCmd(command, workingDir, SIXTY_MINUTES)
 }
 
 def executeBabunCore() {

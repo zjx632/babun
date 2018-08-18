@@ -62,11 +62,11 @@ def installCore(File rootFolder, File outputFolder, String babunBranch) {
     executeCmd("${bash} -c \"${clone}; ${checkout};\"", 5)
 
     // remove windows new line feeds
-    String dos2unix = "find /usr/local/etc/babun/source/babun-core -type f -exec dos2unix {} \\;"
+    String dos2unix = "/bin/find /usr/local/etc/babun/source/babun-core -type f -exec dos2unix {} \\;"
     executeCmd("${bash} -c \"${dos2unix}\"", 5)
 
     // make installer executable
-    String chmod = "find /usr/local/etc/babun/source/babun-core -type f -regex '.*sh' -exec chmod u+x {} \\;"
+    String chmod = "/bin/find /usr/local/etc/babun/source/babun-core -type f -regex '.*sh' -exec chmod u+x {} \\;"
     executeCmd("${bash} -c \"${chmod}\"", 5)
 
     // invoke init.sh
