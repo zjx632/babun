@@ -11,12 +11,12 @@ run() {
 
     if [ "$arch" = "x86" ]; then
         echo "Fixing awk.exe"
-        /bin/cp -rf /bin/awk.exe /bin/awk.exe.current
+        /bin/cp -rf /bin/awk /bin/awk.current
         /bin/cp -rf $src/busybox.exe /bin/awk.exe
         chmod 755 /bin/awk.exe
 	else
 	    echo "Fixing awk.exe"
-        /bin/cp -rf /bin/awk.exe /bin/awk.exe.current
+        /bin/cp -rf /bin/awk /bin/awk.current
         /bin/cp -rf $src/busybox64.exe /bin/awk.exe
         chmod 755 /bin/awk.exe
     fi
