@@ -7,7 +7,7 @@ source "$babun_tools/script.sh"
 run() {
     # reference http://stackoverflow.com/a/4454754
     pushd /usr/ssl/certs 2>/dev/null
-    curl http://curl.haxx.se/ca/cacert.pem | awk '{echo > "cert" (1+n) ".pem"} /-----END CERTIFICATE-----/ {n++}'
+    wget -O - http://curl.haxx.se/ca/cacert.pem | awk 'split_after==1{n++;split_a fter=0} /-----END CERTIFICATE-----/ {split_after=1} {echo > "cert" n ".pem"}'
     c_rehash
     popd 2>/dev/null
 }
