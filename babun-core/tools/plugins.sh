@@ -55,7 +55,7 @@ function plugin_install {
     fi
 
     local plugin_version
-    plugin_version=$(awk -F '=' '/plugin_version/ { print $2}' "$plugin_desc")
+    plugin_version=$(awk -F '=' '/plugin_version/ { printf $2}' "$plugin_desc")
 
     # checks the version, install only if the version is newer
     # uses the plugin descriptor variables
