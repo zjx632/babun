@@ -18,7 +18,7 @@ run() {
     local dest="$babun/home/oh-my-zsh/.oh-my-zsh"
 
     if [ ! -d "$src" ]; then
-        git clone https://github.com/robbyrussell/oh-my-zsh.git "$src"
+        git clone https://github.com/robbyrussell/oh-my-zsh "$src"
         git --git-dir="$src/.git" --work-tree="$src" config core.trustctime false
         git --git-dir="$src/.git" --work-tree="$src" config core.autocrlf false
         git --git-dir="$src/.git" --work-tree="$src" rm --cached -r . > /dev/null
