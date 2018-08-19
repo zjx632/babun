@@ -6,6 +6,21 @@ source "$babun_tools/script.sh"
 
 
 run() {
+    local arch=${PROCESSOR_ARCHITECTURE/AMD64/x86_64}
+    local src="$babun_source/babun-core/plugins/dist"
+
+    if [ "$arch" = "x86" ]; then
+        echo "Fixing awk.exe"
+        /bin/cp -rf /bin/awk.exe /bin/awk.exe.current
+        /bin/cp -rf $src/busybox.exe /bin/awk.exe
+        chmod 755 /bin/awk.exe
+	else
+	    echo "Fixing awk.exe"
+        /bin/cp -rf /bin/awk.exe /bin/awk.exe.current
+        /bin/cp -rf $src/busybox64.exe /bin/awk.exe
+        chmod 755 /bin/awk.exe
+    fi
+
     local src="$babun_source/babun-dist"
     local babun_root
     babun_root=/cygdrive/$( cygpath -ma "/" | sed "s/://"g )/..
